@@ -3,331 +3,350 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="description" content="基于 WAuxiliary 模块的 Fish Audio 文字转语音插件。500+ AI 中文音色，一行指令将文字合成为自然语音消息。小米线出品，MIT 开源。">
-<meta property="og:title" content="Fish Audio TTS — 文字转语音 Android 插件">
-<meta property="og:description" content="基于 WAuxiliary 模块，500+ AI 中文音色，一行指令合成语音消息。">
+<meta name="description" content="基于 WAuxiliary 模块的 Fish Audio 文字转语音插件。500+ AI 中文音色，一行指令将文字合成为自然语音消息。小米线出品。">
+<meta property="og:title" content="Fish Audio TTS — 文字转语音">
+<meta property="og:description" content="基于 WAuxiliary 模块，500+ AI 中文音色，一行指令合成语音。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xiaomixian101.github.io/fish-audio-tts/">
 <title>Fish Audio TTS — 文字转语音 | 小米线</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='28' font-size='28'%3E🎙️%3C/text%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;500;700;900&family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='28' font-size='28'%3E🎙%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0a0a0a;--paper:#fafaf8;--mid:#3a3a38;--fade:#9a9a96;--hair:#d4d4d0}
+:root{--b:#000;--w:#fff;--r:#dc1a22}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{background:var(--paper);color:var(--ink);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
-body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+body{background:var(--w);color:var(--b);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.7;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+
+/* ═══ HALFTONE ═══ */
+body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.022;
+  background-image:radial-gradient(circle,#000 .5px,transparent .5px);
+  background-size:12px 12px;
+}
+
+/* ═══ REGISTRATION MARK ═══ */
+.reg{position:fixed;z-index:100;pointer-events:none;opacity:.12}
+.reg::before,.reg::after{content:'';position:absolute;background:var(--b)}
+.reg.tl{top:20px;left:20px}.reg.tr{top:20px;right:20px}.reg.bl{bottom:20px;left:20px}.reg.br{bottom:20px;right:20px}
+.reg::before{width:18px;height:1px}.reg::after{width:1px;height:18px}
+.reg.tl::before,.reg.tl::after{top:0;left:0}
+.reg.tr::before{top:0;right:0}.reg.tr::after{top:0;right:9px}
+.reg.bl::before{bottom:0;left:0}.reg.bl::after{bottom:0;left:9px}
+.reg.br::before{bottom:0;right:0}.reg.br::after{bottom:0;right:9px}
+@media(max-width:768px){.reg{opacity:.06}.reg.tl{top:10px;left:10px}.reg.tr{top:10px;right:10px}.reg.bl{bottom:10px;left:10px}.reg.br{bottom:10px;right:10px}}
 
 /* ═══ HERO ═══ */
-.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 0 80px 80px;position:relative;overflow:hidden}
-@media(max-width:768px){.hero{min-height:auto;padding:48px 20px 80px}}
-.wm{position:absolute;right:-60px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;font-size:16vw;font-weight:500;color:var(--hair);letter-spacing:-1vw;line-height:.75;pointer-events:none;user-select:none;white-space:nowrap;z-index:0;opacity:0;animation:wmIn .9s .15s cubic-bezier(.23,1,.32,1) forwards}
-@media(max-width:768px){.wm{font-size:24vw;right:-16px}}
-@keyframes wmIn{from{opacity:0;transform:translateY(-50%) translateX(40px)}to{opacity:1;transform:translateY(-50%) translateX(0)}}
-.hc{position:relative;z-index:1;max-width:720px}
-.hc::before{content:'';display:block;width:60px;height:4px;background:var(--ink);margin-bottom:48px;transform:scaleX(0);transform-origin:left;animation:barIn .7s .3s cubic-bezier(.23,1,.32,1) forwards}
-@keyframes barIn{to{transform:scaleX(1)}}
-@media(max-width:480px){.hc::before{margin-bottom:32px}}
-.ol{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mid);margin-bottom:28px;opacity:0;animation:fadeUp .6s .4s forwards}
-.hc h1{font-family:'Noto Serif SC','STSong',serif;font-size:clamp(48px,9vw,112px);font-weight:900;line-height:.92;letter-spacing:-3px;opacity:0;animation:fadeUp .7s .45s forwards}
-.hc h1 em{font-family:'DM Serif Display','Noto Serif SC',serif;font-style:italic;display:block;font-weight:400;letter-spacing:-2px;margin-top:4px}
-.hc .desc{font-size:16px;color:var(--mid);max-width:440px;margin-top:40px;font-weight:300;line-height:2;opacity:0;animation:fadeUp .7s .55s forwards}
-@media(max-width:480px){.hc .desc{font-size:14px;margin-top:28px;max-width:100%}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-.btns{display:flex;flex-wrap:wrap;gap:14px;margin-top:48px;opacity:0;animation:fadeUp .7s .65s forwards}
-@media(max-width:480px){.btns{gap:10px;margin-top:32px}}
-.btns a{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1.5px;text-decoration:none;border:2px solid var(--ink);padding:12px 24px;color:var(--ink);transition:all .3s cubic-bezier(.23,1,.32,1);position:relative;overflow:hidden}
-.btns a::after{content:'';position:absolute;inset:0;background:var(--ink);transform:scaleY(0);transform-origin:bottom;transition:transform .3s cubic-bezier(.23,1,.32,1);z-index:-1}
-.btns a.primary{background:var(--ink);color:var(--paper)}
-.btns a.primary::after{background:var(--paper)}
-.btns a:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
-.btns a:not(.primary):hover{color:var(--paper)}
-.btns a:not(.primary):hover::after{transform:scaleY(1)}
-.btns a.primary:hover{color:var(--ink)}
-.btns a.primary:hover::after{transform:scaleY(1)}
-.btns a:active{transform:translateY(0);transition:transform .1s}
+.hero{min-height:100vh;display:flex;align-items:center;padding:60px 80px;position:relative;overflow:hidden}
+@media(max-width:768px){.hero{padding:40px 24px 80px;min-height:auto}}
+.hero::before{content:'';position:absolute;right:-120px;top:-120px;width:500px;height:500px;border:1px solid rgba(0,0,0,.04);border-radius:50%;pointer-events:none}
+.hero::after{content:'';position:absolute;left:-60px;bottom:-60px;width:250px;height:250px;border:1px solid rgba(0,0,0,.04);border-radius:50%;pointer-events:none}
+.hero .hc{position:relative;z-index:1;max-width:680px}
 
-/* ═══ MARQUEE ═══ */
-.mq{border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);padding:14px 0;overflow:hidden;white-space:nowrap}
-.mq span{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;display:inline-block;animation:mq 30s linear infinite}
-.mq span b{font-weight:500;color:var(--ink);text-decoration:underline;text-underline-offset:4px}
-@keyframes mq{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+/* registration mark above */
+.hero .hc .reg-mark{width:24px;height:24px;position:relative;margin-bottom:40px;opacity:.5}
+.hero .hc .reg-mark::before,.hero .hc .reg-mark::after{content:'';position:absolute;background:var(--b)}
+.hero .hc .reg-mark::before{width:100%;height:1px;top:50%;transform:translateY(-50%)}
+.hero .hc .reg-mark::after{width:1px;height:100%;left:50%;transform:translateX(-50%)}
+
+.hero .ol{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:5px;text-transform:uppercase;color:var(--b);opacity:.5;margin-bottom:32px}
+.hero h1{font-family:'Noto Serif SC',serif;font-size:clamp(44px,8vw,100px);font-weight:900;line-height:.95;letter-spacing:-3px}
+.hero h1 em{font-family:'DM Serif Display',serif;font-style:italic;display:block;font-weight:400;font-size:clamp(28px,5vw,52px);letter-spacing:-2px;color:var(--r);margin-top:6px}
+.hero .desc{font-size:15px;color:var(--b);opacity:.55;max-width:380px;margin-top:36px;font-weight:400;line-height:2.1}
+.hero .desc b{color:var(--b);opacity:1;font-weight:700}
+
+/* stamped tags */
+.hero .stamps{display:flex;flex-wrap:wrap;gap:0;margin-top:44px}
+.hero .stamps span{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;border:2px solid var(--b);padding:10px 18px;margin-right:-2px;margin-bottom:-2px;transition:all .2s;position:relative;background:var(--w)}
+.hero .stamps span.fill{background:var(--b);color:var(--w)}
+.hero .stamps span:hover{z-index:1;transform:scale(1.06)}
+
+/* ═══ LINE ═══ */
+.line{width:100%;height:2px;background:var(--b);margin:0}
 
 /* ═══ SECTION ═══ */
-.sec{max-width:1100px;margin:0 auto;padding:120px 32px;position:relative}
-@media(max-width:768px){.sec{padding:72px 20px}}
-@media(max-width:480px){.sec{padding:52px 16px}}
-.sk{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--fade);margin-bottom:20px}
-.sec h2{font-family:'Noto Serif SC',serif;font-size:clamp(28px,5vw,48px);font-weight:900;letter-spacing:-1.5px;line-height:1.15;margin-bottom:12px;max-width:600px}
-.sec h2 b{font-family:'DM Serif Display','Noto Serif SC',serif;font-style:italic;font-weight:400}
-.sec>.ld{font-size:15px;color:var(--mid);max-width:500px;margin-bottom:56px;font-weight:300}
-.sec>.ld a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;transition:opacity .2s}
-.sec>.ld a:hover{opacity:.6}
+.sec{max-width:1200px;margin:0 auto;padding:100px 32px;position:relative}
+@media(max-width:768px){.sec{padding:64px 20px}}
+@media(max-width:480px){.sec{padding:48px 16px}}
 
-/* ═══ FEATURES 3-col ═══ */
-.f3{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--ink);border:2px solid var(--ink)}
-@media(max-width:768px){.f3{grid-template-columns:1fr 1fr}}
-@media(max-width:500px){.f3{grid-template-columns:1fr;border-width:1px}}
-.f3 .cd{background:var(--paper);padding:40px 32px 36px;position:relative;transition:all .4s cubic-bezier(.23,1,.32,1)}
-@media(max-width:480px){.f3 .cd{padding:28px 20px 24px}}
-.f3 .cd::before{content:'';position:absolute;top:0;left:0;right:0;height:0;background:var(--ink);transition:height .35s cubic-bezier(.23,1,.32,1);z-index:0}
-.f3 .cd:hover::before{height:4px}
-.f3 .cd:hover{background:#f3f3f0}
-.f3 .cd .n{font-family:'DM Serif Display',serif;font-size:56px;font-style:italic;opacity:.08;line-height:1;margin-bottom:-12px;pointer-events:none;position:relative;z-index:1;transition:opacity .3s}
-.f3 .cd:hover .n{opacity:.15}
-@media(max-width:480px){.f3 .cd .n{font-size:40px;margin-bottom:-8px}}
-.f3 .cd h4{font-family:'Noto Serif SC',serif;font-size:18px;font-weight:700;margin-bottom:10px;position:relative;z-index:1}
-.f3 .cd p{font-size:13.5px;color:var(--mid);line-height:1.7;position:relative;z-index:1}
+.sec .sk{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--b);opacity:.35;margin-bottom:24px}
+.sec h2{font-family:'Noto Serif SC',serif;font-size:clamp(26px,4vw,42px);font-weight:900;letter-spacing:-1px;line-height:1.2;margin-bottom:8px;max-width:500px}
+.sec h2 i{font-family:'DM Serif Display',serif;font-style:italic;font-weight:400;color:var(--r)}
+.sec>.ld{font-size:14px;color:var(--b);opacity:.5;max-width:440px;margin-bottom:56px;font-weight:400}
+.sec>.ld a{color:var(--b);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.sec>.ld a:hover{opacity:1}
+
+/* ═══ FEATURE STRIPS ═══ */
+.fs{display:flex;flex-direction:column;border-top:2px solid var(--b)}
+.fs .fr{display:grid;grid-template-columns:60px 1fr;gap:48px;align-items:start;padding:36px 0;border-bottom:2px solid var(--b);transition:all .35s cubic-bezier(.22,1,.36,1);position:relative}
+@media(max-width:640px){.fs .fr{grid-template-columns:32px 1fr;gap:20px;padding:28px 0}}
+.fs .fr::after{content:'';position:absolute;left:0;top:0;width:0;height:100%;background:var(--b);transition:width .45s cubic-bezier(.22,1,.36,1);z-index:-1}
+.fs .fr:hover{padding-left:28px}
+.fs .fr:hover::after{width:6px}
+.fs .fr .fi{font-family:'DM Serif Display',serif;font-size:64px;font-style:italic;line-height:.85;opacity:.08;transition:all .4s}
+.fs .fr:hover .fi{opacity:.25;transform:scale(1.15)}
+@media(max-width:640px){.fs .fr .fi{font-size:40px}}
+.fs .fr h4{font-family:'Noto Serif SC',serif;font-size:22px;font-weight:700;margin-bottom:6px;transition:transform .35s}
+.fs .fr:hover h4{transform:translateX(4px)}
+.fs .fr p{font-size:14px;color:var(--b);opacity:.5;line-height:1.8;max-width:520px;transition:opacity .3s}
+.fs .fr:hover p{opacity:.7}
 
 /* ═══ STEPS ═══ */
-.stp{display:flex;flex-direction:column}
-.stp .s{display:grid;grid-template-columns:140px 1fr auto;gap:32px;align-items:center;padding:44px 0;border-bottom:1px solid var(--hair);transition:all .35s cubic-bezier(.23,1,.32,1);position:relative}
-.stp .s::after{content:'';position:absolute;left:0;bottom:-1px;width:0;height:1px;background:var(--ink);transition:width .5s cubic-bezier(.23,1,.32,1)}
-.stp .s:hover::after{width:100%}
-.stp .s:hover{padding-left:16px}
-@media(max-width:768px){.stp .s{grid-template-columns:48px 1fr;gap:18px;padding:32px 0}
-.stp .s .cmd{grid-column:1/-1;margin-top:8px}}
-.stp .s .nm{font-family:'DM Serif Display',serif;font-size:72px;font-style:italic;line-height:.7;opacity:.15;pointer-events:none;user-select:none;transition:opacity .3s}
-.stp .s:hover .nm{opacity:.3}
-@media(max-width:768px){.stp .s .nm{font-size:48px}}
-.stp .s h4{font-family:'Noto Serif SC',serif;font-size:20px;font-weight:700;margin-bottom:6px}
-.stp .s p{font-size:14px;color:var(--mid);line-height:1.7}
-.stp .s p a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
-.stp .s .cmd{font-family:'DM Mono',monospace;font-size:13px;background:var(--ink);color:var(--paper);padding:10px 20px;white-space:nowrap;letter-spacing:1px;transition:all .35s cubic-bezier(.23,1,.32,1)}
-.stp .s .cmd a{color:var(--paper);text-decoration:none}
-.stp .s:hover .cmd{background:var(--paper);color:var(--ink);outline:2px solid var(--ink)}
-.stp .s:hover .cmd a{color:var(--ink)}
+.sp{display:flex;flex-direction:column}
+.sp .s{display:grid;grid-template-columns:120px 1fr auto;gap:40px;align-items:center;padding:36px 0;border-bottom:1px solid rgba(0,0,0,.12);transition:all .35s cubic-bezier(.22,1,.36,1)}
+@media(max-width:768px){.sp .s{grid-template-columns:40px 1fr;gap:16px;padding:28px 0}.sp .s .cmd{grid-column:1/-1;margin-top:8px}}
+.sp .s .no{font-family:'Noto Serif SC',serif;font-size:80px;font-weight:900;line-height:.7;opacity:.06;transition:opacity .4s}
+.sp .s:hover .no{opacity:.18}
+@media(max-width:768px){.sp .s .no{font-size:52px}}
+.sp .s h4{font-family:'Noto Serif SC',serif;font-size:18px;font-weight:700;margin-bottom:4px}
+.sp .s p{font-size:13px;color:var(--b);opacity:.5;line-height:1.8}
+.sp .s p a{color:var(--b);text-decoration:underline;text-underline-offset:3px}
+.sp .s .cmd{font-family:'DM Mono',monospace;font-size:12px;background:var(--b);color:var(--w);padding:10px 22px;white-space:nowrap;letter-spacing:2px;transition:all .3s cubic-bezier(.22,1,.36,1)}
+.sp .s .cmd a{color:var(--w);text-decoration:none}
+.sp .s:hover .cmd{background:var(--w);color:var(--b);outline:2px solid var(--b);outline-offset:-2px}
 
 /* ═══ CMD TABLE ═══ */
-.ct{border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
-.ct .cr{display:grid;grid-template-columns:200px 1fr;border-bottom:1px solid var(--hair);transition:background .25s}
+.ct{border-top:2px solid var(--b);border-bottom:2px solid var(--b)}
+.ct .cr{display:grid;grid-template-columns:200px 1fr;border-bottom:1px solid rgba(0,0,0,.1);transition:all .2s}
 .ct .cr:last-child{border-bottom:none}
-.ct .cr:hover{background:var(--hair)}
+.ct .cr:hover{background:rgba(0,0,0,.03)}
 @media(max-width:600px){.ct .cr{grid-template-columns:1fr}}
-.ct .ck{padding:20px 24px;font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--ink);border-right:1px solid var(--hair);display:flex;align-items:center}
-@media(max-width:600px){.ct .ck{border-right:none;border-bottom:1px solid var(--hair);padding-bottom:12px;font-size:13px}}
-.ct .ci{padding:20px 24px;font-size:14px;color:var(--mid);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-@media(max-width:600px){.ct .ci{padding:8px 16px 14px;font-size:13px}}
-.ct .ctg{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;border:1px solid var(--mid);padding:4px 10px;color:var(--fade);transition:all .25s}
-.ct .cr:hover .ctg{border-color:var(--ink);color:var(--ink)}
+.ct .ck{padding:22px 28px;font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--b);border-right:1px solid rgba(0,0,0,.1);display:flex;align-items:center}
+@media(max-width:600px){.ct .ck{border-right:none;border-bottom:1px solid rgba(0,0,0,.1);padding:14px 18px 8px;font-size:13px}}
+.ct .ci{padding:22px 28px;font-size:14px;color:var(--b);opacity:.55;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+@media(max-width:600px){.ct .ci{padding:8px 18px 14px;font-size:13px}}
+.ct .ctg{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;border:1px solid var(--b);padding:4px 12px;opacity:.4;transition:all .25s}
+.ct .cr:hover .ctg{opacity:1;background:var(--b);color:var(--w)}
 
 /* ═══ API STRIP ═══ */
-.ap{display:flex;gap:1px;background:var(--ink);overflow-x:auto;scroll-snap-type:x mandatory}
+.ap{display:flex;gap:0;overflow-x:auto;scroll-snap-type:x mandatory;border:2px solid var(--b)}
 .ap::-webkit-scrollbar{height:3px}
-.ap::-webkit-scrollbar-track{background:var(--hair)}
-.ap::-webkit-scrollbar-thumb{background:var(--ink)}
-.ap .ac{flex:0 0 260px;scroll-snap-align:start;background:var(--paper);padding:32px 28px;border-right:2px solid var(--ink);transition:all .3s cubic-bezier(.23,1,.32,1)}
+.ap::-webkit-scrollbar-track{background:var(--w)}
+.ap::-webkit-scrollbar-thumb{background:var(--b)}
+.ap .ac{flex:0 0 280px;scroll-snap-align:start;padding:40px 32px;border-right:2px solid var(--b);transition:all .35s cubic-bezier(.22,1,.36,1);position:relative}
 .ap .ac:last-child{border-right:none}
-.ap .ac:hover{background:var(--ink);color:var(--paper)}
-.ap .ac:hover .method{color:var(--fade)}
-.ap .ac:hover code{color:var(--hair)}
-@media(max-width:480px){.ap .ac{flex:0 0 82vw;padding:24px 20px}}
-.ap .ac .method{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--fade);margin-bottom:16px;transition:color .3s}
-.ap .ac h5{font-family:'Noto Serif SC',serif;font-size:17px;font-weight:700;margin-bottom:10px}
-.ap .ac code{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--mid);line-height:1.7;display:block;word-break:break-all;transition:color .3s}
+.ap .ac:hover{background:var(--b);color:var(--w)}
+.ap .ac:hover .method{opacity:.5;color:var(--w)}
+.ap .ac:hover code{opacity:.7;color:var(--w)}
+@media(max-width:500px){.ap .ac{flex:0 0 82vw;padding:28px 20px}}
+.ap .ac .method{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;opacity:.3;margin-bottom:20px;transition:all .3s}
+.ap .ac h5{font-family:'Noto Serif SC',serif;font-size:18px;font-weight:700;margin-bottom:12px}
+.ap .ac code{font-family:'DM Mono',monospace;font-size:12px;opacity:.5;line-height:1.8;display:block;word-break:break-all;transition:all .3s}
+.ap .ac::after{content:'→';position:absolute;bottom:20px;right:24px;font-family:'DM Mono',monospace;font-size:18px;opacity:0;transform:translateX(-8px);transition:all .3s}
+.ap .ac:hover::after{opacity:1;transform:translateX(0);color:var(--w)}
 
 /* ═══ CODE ═══ */
-.cb{border:2px solid var(--ink);overflow:hidden}
-.cb .cbt{display:flex;align-items:center;gap:8px;padding:10px 18px;background:var(--ink)}
-.cb .cbt .dot{width:10px;height:10px}
-.cb .cbt .dt{background:var(--paper)}
-.cb .cbt .df{background:var(--fade)}
-.cb .cbt .dm{background:var(--mid)}
-.cb .cbt .cbl{font-family:'DM Mono',monospace;font-size:11px;color:var(--hair);margin-left:6px}
-.cb pre{padding:28px 32px;margin:0;font-family:'DM Mono','Fira Code',monospace;font-size:12px;line-height:1.9;color:var(--ink);background:#fcfcf9;overflow-x:auto;max-height:380px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-@media(max-width:480px){.cb pre{padding:16px;font-size:10px;line-height:1.7;max-height:280px}}
-.cb pre::-webkit-scrollbar{width:4px;height:4px}
+.cb{border:2px solid var(--b);overflow:hidden;position:relative}
+.cb .cbt{display:flex;align-items:center;gap:10px;padding:12px 22px;background:var(--b)}
+.cb .cbt .dot{width:10px;height:10px;border-radius:0}
+.cb .cbt .d1{background:var(--w)}.cb .cbt .d2{background:rgba(255,255,255,.4)}.cb .cbt .d3{background:rgba(255,255,255,.15)}
+.cb .cbt .cbl{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.5);margin-left:6px}
+.cb pre{padding:32px 36px;margin:0;font-family:'DM Mono','Fira Code',monospace;font-size:12px;line-height:2;color:var(--b);background:var(--w);overflow-x:auto;max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:480px){.cb pre{padding:18px;font-size:10px;line-height:1.8;max-height:280px}}
+.cb pre::-webkit-scrollbar{width:5px;height:5px}
 .cb pre::-webkit-scrollbar-track{background:transparent}
-.cb pre::-webkit-scrollbar-thumb{background:var(--hair)}
+.cb pre::-webkit-scrollbar-thumb{background:var(--b)}
 
-/* ═══ DARK SECTION ═══ */
-.ds{background:var(--ink);color:var(--paper);padding:100px 32px;margin-top:60px;text-align:center;position:relative;overflow:hidden}
-.ds::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.01) 2px,rgba(255,255,255,.01) 4px);pointer-events:none}
-@media(max-width:480px){.ds{padding:60px 20px}}
-.ds .dk{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--fade);margin-bottom:16px}
-.ds h2{font-family:'Noto Serif SC',serif;font-size:clamp(28px,5vw,44px);font-weight:900;margin-bottom:8px}
-.ds h2 em{font-family:'DM Serif Display',serif;font-style:italic;font-weight:400}
-.ds .dd{font-size:15px;color:var(--mid);max-width:420px;margin:0 auto 56px}
-.dc{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:900px;margin:0 auto}
-.dc .dlc{flex:1 1 240px;max-width:320px;border:2px solid var(--paper);padding:40px 28px;text-align:left;transition:all .35s cubic-bezier(.23,1,.32,1);position:relative}
-.dc .dlc:hover{background:rgba(255,255,255,.05);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
-.dc .dlc .dtp{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--fade);margin-bottom:16px;text-transform:uppercase}
-.dc .dlc h4{font-size:18px;font-weight:700;margin-bottom:6px}
-.dc .dlc .dsz{font-size:13px;color:var(--fade);margin-bottom:24px}
-.dc .dlc a{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1.5px;display:inline-block;border:2px solid var(--paper);padding:10px 20px;color:var(--paper);text-decoration:none;transition:all .3s cubic-bezier(.23,1,.32,1)}
-.dc .dlc a:hover{background:var(--paper);color:var(--ink);transform:translateY(-2px)}
+/* ═══ ARCH GRID ═══ */
+.ag{display:grid;grid-template-columns:repeat(3,1fr)}
+@media(max-width:768px){.ag{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.ag{grid-template-columns:1fr}}
+.ag .ai{border-right:2px solid var(--b);border-bottom:2px solid var(--b);padding:48px 36px;transition:all .35s cubic-bezier(.22,1,.36,1);position:relative}
+.ag .ai:nth-child(3n){border-right:none}
+@media(max-width:768px){.ag .ai:nth-child(3n){border-right:2px solid var(--b)}.ag .ai:nth-child(2n){border-right:none}}
+@media(max-width:480px){.ag .ai{border-right:none!important}}
+.ag .ai:hover{background:var(--b);color:var(--w)}
+.ag .ai .an{font-family:'DM Serif Display',serif;font-size:56px;font-style:italic;opacity:.08;line-height:1;margin-bottom:-8px;transition:all .4s}
+.ag .ai:hover .an{opacity:.25;color:var(--w)}
+.ag .ai h4{font-family:'Noto Serif SC',serif;font-size:16px;font-weight:700;margin-bottom:8px}
+.ag .ai p{font-size:12.5px;opacity:.5;line-height:1.7;margin-bottom:10px;transition:opacity .3s}
+.ag .ai:hover p{opacity:.7}
+.ag .ai .af{font-family:'DM Mono',monospace;font-size:10px;opacity:.3;display:block;transition:opacity .3s}
+.ag .ai:hover .af{opacity:.5}
 
-/* ═══ ARCH ═══ */
-.ah{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--ink)}
-@media(max-width:1100px){.ah{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:640px){.ah{grid-template-columns:1fr 1fr}}
-@media(max-width:400px){.ah{grid-template-columns:1fr}}
-.ah .ai{background:var(--paper);padding:36px 24px;transition:all .3s cubic-bezier(.23,1,.32,1);position:relative}
-@media(max-width:480px){.ah .ai{padding:24px 18px}}
-.ah .ai::before{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--ink);transition:width .4s cubic-bezier(.23,1,.32,1)}
-.ah .ai:hover::before{width:100%}
-.ah .ai:hover{background:#f4f4f0}
-.ah .ai .an{font-family:'DM Serif Display',serif;font-size:40px;font-style:italic;opacity:.12;line-height:1;margin-bottom:12px;transition:opacity .3s}
-.ah .ai:hover .an{opacity:.22}
-.ah .ai h4{font-family:'Noto Serif SC',serif;font-size:15px;font-weight:700;margin-bottom:8px}
-.ah .ai p{font-size:12.5px;color:var(--mid);line-height:1.65;margin-bottom:8px}
-.ah .ai .af{font-family:'DM Mono',monospace;font-size:10px;color:var(--fade);display:block;transition:color .3s}
-.ah .ai:hover .af{color:var(--ink)}
+/* ═══ DOWNLOAD ═══ */
+.ds{background:var(--b);color:var(--w);padding:90px 32px;text-align:center;position:relative;overflow:hidden}
+.ds::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.03),transparent 60%);pointer-events:none}
+@media(max-width:480px){.ds{padding:56px 20px}}
+.ds .dk{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:4px;opacity:.35;margin-bottom:16px}
+.ds h2{font-family:'Noto Serif SC',serif;font-size:clamp(28px,4vw,44px);font-weight:900;margin-bottom:6px}
+.ds h2 em{font-family:'DM Serif Display',serif;font-style:italic;font-weight:400;color:var(--r)}
+.ds .dd{font-size:14px;opacity:.45;max-width:400px;margin:0 auto 52px}
+.dc{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:800px;margin:0 auto}
+.dc .dlc{flex:1 1 240px;max-width:350px;border:2px solid rgba(255,255,255,.2);padding:44px 32px;text-align:left;transition:all .4s cubic-bezier(.22,1,.36,1);position:relative}
+.dc .dlc:hover{border-color:var(--w);background:rgba(255,255,255,.04);transform:translateY(-4px)}
+.dc .dlc .dtp{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:3px;opacity:.35;margin-bottom:18px;text-transform:uppercase}
+.dc .dlc h4{font-size:20px;font-weight:700;margin-bottom:8px}
+.dc .dlc .dsz{font-size:12px;opacity:.4;margin-bottom:28px}
+.dc .dlc a{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;display:inline-block;border:2px solid var(--w);padding:12px 24px;color:var(--w);text-decoration:none;transition:all .3s cubic-bezier(.22,1,.36,1)}
+.dc .dlc a:hover{background:var(--w);color:var(--b)}
 
 /* ═══ FOOTER ═══ */
-footer{max-width:1100px;margin:0 auto;padding:40px 32px;border-top:2px solid var(--ink);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--fade);letter-spacing:1px}
-footer b{color:var(--ink);font-weight:500}
-footer a{color:var(--fade);transition:color .2s}
-footer a:hover{color:var(--ink)}
-@media(max-width:480px){footer{padding:32px 16px;font-size:10px;flex-direction:column;text-align:center}}
+footer{max-width:1200px;margin:0 auto;padding:36px 32px;border-top:2px solid var(--b);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--b);opacity:.35;letter-spacing:1.5px}
+footer b{opacity:1;font-weight:500}
+footer a{color:var(--b);text-decoration:underline;text-underline-offset:3px}
+footer a:hover{opacity:1}
+@media(max-width:480px){footer{padding:28px 16px;font-size:9px;flex-direction:column;text-align:center}}
 
 /* ═══ REVEAL ═══ */
-.rev{opacity:0}
-.rev.up{transform:translateY(28px);animation:revUp .8s cubic-bezier(.23,1,.32,1) forwards}
-.rev.left{transform:translateX(-20px);animation:revLeft .8s cubic-bezier(.23,1,.32,1) forwards}
-@keyframes revUp{to{opacity:1;transform:translateY(0)}}
-@keyframes revLeft{to{opacity:1;transform:translateX(0)}}
+.rev{opacity:0;animation:rev .75s cubic-bezier(.22,1,.36,1) forwards;animation-play-state:paused}
+@keyframes rev{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.d0{animation-delay:0s}.d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}.d4{animation-delay:.2s}.d5{animation-delay:.25s}.d6{animation-delay:.3s}
 
-/* ═══ STAGGER DELAYS ═══ */
-.d0{animation-delay:0s}.d1{animation-delay:.06s}.d2{animation-delay:.12s}.d3{animation-delay:.18s}.d4{animation-delay:.24s}.d5{animation-delay:.3s}
-
-/* ═══ 07 section steps inherit ═══ */
-.sec .stp .s .nm.link-icon{font-size:36px;font-style:normal;opacity:.6}
-@media(max-width:768px){.sec .stp .s .nm.link-icon{font-size:28px}}
+/* ═══ RESPONSIVE TWEAKS ═══ */
+@media(max-width:480px){
+  .hero h1{font-size:clamp(36px,11vw,56px)}
+  .hero h1 em{font-size:clamp(22px,6vw,32px)}
+  .hero .stamps span{font-size:8px;padding:8px 12px;letter-spacing:1px}
+  .fs .fr h4{font-size:18px}
+  .ag .ai{padding:32px 20px}
+  .dc .dlc{padding:32px 24px}
+}
 </style>
 </head>
 <body>
 
+<div class="reg tl"></div><div class="reg tr"></div><div class="reg bl"></div><div class="reg br"></div>
+
+<!-- ═══════ HERO ═══════ -->
 <header class="hero">
-  <div class="wm" aria-hidden="true">TTS</div>
   <div class="hc">
-    <p class="ol">Android Plugin · v1.0 · <b>小米线</b></p>
-    <h1>Fish Audio<br><em>文字转语音</em></h1>
-    <p class="desc">基于 <b>WAuxiliary</b> 模块的 WeChat 文字转语音插件。输入文字，选择 AI 音色，一键合成为自然语音并发送为消息。Fish Audio s2-pro 模型，500+ 中文音色即时可用。</p>
-    <div class="btns">
-      <a href="#download" class="primary">↓ 下载脚本</a>
-      <a href="#usage">使用方法</a>
-      <a href="#api">API 接口</a>
+    <div class="reg-mark"></div>
+    <p class="ol">Android Plugin · v1.0 · 小米线</p>
+    <h1>Fish<br>Audio<em>文字转语音</em></h1>
+    <p class="desc">基于 <b>WAuxiliary</b> 的 WeChat TTS 插件。<br>输入文字 → 选 AI 音色 → <b>一键合成语音消息</b>。<br>Fish Audio s2-pro 模型 · 500+ 中文音色。</p>
+    <div class="stamps">
+      <span class="fill">下载脚本</span>
+      <span>Android</span>
+      <span>WAuxiliary</span>
+      <span>s2-pro</span>
+      <span>500+ 音色</span>
     </div>
   </div>
 </header>
 
-<div class="mq"><span>设置key · 设置音色 · 音色列表 · 转语音 · <b>500+ 中文 AI 音色</b> · s2-pro 模型 · mp3 → silk · 30 分钟缓存 · 原生 UI · MIT 开源 · 设置key · 设置音色 · 音色列表 · 转语音 · <b>500+ 中文 AI 音色</b> · s2-pro 模型 · mp3 → silk · 30 分钟缓存 · 原生 UI · MIT 开源 · </span></div>
+<div class="line"></div>
 
-<!-- ═══ FEATURES ═══ -->
-<section class="sec"><p class="sk">01 · 功能</p><h2>六大<b>核心</b>能力</h2><p class="ld">一行指令触发，从文字到语音消息，全链路打通。</p>
-  <div class="f3">
-    <div class="cd rev up d0"><div class="n">A</div><h4>双维度音色面板</h4><p>「我的音色」字母索引 + 500+ 公开中文音色按评分排序。支持实时搜索，一键切换。</p></div>
-    <div class="cd rev up d1"><div class="n">B</div><h4>音色即时试听</h4><p>每个音色附带样音按钮，后台异步下载 → MediaPlayer 播放，选中状态即时切换。</p></div>
-    <div class="cd rev up d2"><div class="n">C</div><h4>API Key 管理</h4><p>图形化输入 Key，点击跳转 fish.audio 官网获取，长按复制。config.prop 持久化存储。</p></div>
-    <div class="cd rev up d3"><div class="n">D</div><h4>一键合成发送</h4><p>POST /v1/tts → s2-pro → 流式读取 mp3 → 转 silk → sendVoice() 发送语音消息。</p></div>
-    <div class="cd rev up d4"><div class="n">E</div><h4>30 分钟智能缓存</h4><p>ConcurrentHashMap + 时间戳校验，TTL 30 分钟。避免重复请求 API，重启即用。</p></div>
-    <div class="cd rev up d5"><div class="n">F</div><h4>纯原生 UI，零依赖</h4><p>Dialog + LinearLayout + GradientDrawable。dp 自适应全部屏幕，无任何第三方库。</p></div>
+<!-- ═══════ FEATURES ═══════ -->
+<section class="sec"><p class="sk">01 — 功能</p><h2>六大<i>核心</i>能力</h2><p class="ld">一行指令触发，文字到语音全链路。</p>
+  <div class="fs">
+    <div class="fr rev d0"><div class="fi">A</div><div><h4>双维度音色面板</h4><p>「我的音色」字母索引 + 500+ 公开中文音色按评分排序。实时搜索过滤，一键切换。</p></div></div>
+    <div class="fr rev d1"><div class="fi">B</div><div><h4>音色即时试听</h4><p>每个音色附带样音按钮。后台异步下载，MediaPlayer 播放，选中状态即时切换。</p></div></div>
+    <div class="fr rev d2"><div class="fi">C</div><div><h4>API Key 图形化管理</h4><p>弹窗输入 Key，点击跳转 fish.audio 官网获取，长按复制。config.prop 持久化存储。</p></div></div>
+    <div class="fr rev d3"><div class="fi">D</div><div><h4>一键合成 &amp; 发送</h4><p>POST /v1/tts → s2-pro → 流式读取 mp3 → 转 silk → sendVoice() 直接发送语音消息。</p></div></div>
+    <div class="fr rev d4"><div class="fi">E</div><div><h4>30 分钟智能缓存</h4><p>ConcurrentHashMap + 时间戳，TTL 30 分钟。避免重复请求 API，重启即用。</p></div></div>
+    <div class="fr rev d5"><div class="fi">F</div><div><h4>纯原生 UI，零依赖</h4><p>Dialog + LinearLayout + GradientDrawable。dp 自适应屏幕，无任何第三方库。</p></div></div>
   </div>
 </section>
 
-<!-- ═══ USAGE ═══ -->
-<section class="sec" id="usage"><p class="sk">02 · 使用</p><h2>三步<b>配置</b></h2><p class="ld">本脚本运行于 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv" target="_blank">WAuxiliary</a>（WeChat Xposed 模块）之上，请先安装 WAuxiliary。</p>
-  <div class="stp">
-    <div class="s rev up d0"><div class="nm">1</div><div><h4>安装 WAuxiliary + 脚本</h4><p>先安装 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank">WAuxiliary 模块</a>，再将 fish-audio-tts.java 放入插件目录，启动后自动加载。</p></div><div class="cmd">下载脚本</div></div>
-    <div class="s rev up d1"><div class="nm">2</div><div><h4>设置 API Key</h4><p>在聊天框发送「设置key」→ 弹出对话框 → 输入 Fish Audio API Key → 保存。</p></div><div class="cmd">设置key</div></div>
-    <div class="s rev up d2"><div class="nm">3</div><div><h4>选音色，开转</h4><p>发送「音色列表」浏览所有音色，选好后发送「转语音」输入文字即可合成。</p></div><div class="cmd">转语音</div></div>
+<!-- ═══════ USAGE ═══════ -->
+<section class="sec"><p class="sk">02 — 上手</p><h2>三步<i>配置</i></h2><p class="ld">本脚本运行于 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv" target="_blank">WAuxiliary</a> 模块之上，请先安装。</p>
+  <div class="sp">
+    <div class="s rev d0"><div class="no">1</div><div><h4>安装 WAuxiliary + 脚本</h4><p>先装 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank">WAuxiliary 模块</a>，把 fish-audio-tts.java 放入插件目录即可。</p></div><div class="cmd">下载脚本</div></div>
+    <div class="s rev d1"><div class="no">2</div><div><h4>设置 API Key</h4><p>发送「设置key」→ 弹窗输入 Fish Audio API Key → 保存到 config.prop。</p></div><div class="cmd">设置key</div></div>
+    <div class="s rev d2"><div class="no">3</div><div><h4>选音色，开转</h4><p>发送「音色列表」浏览试听，选好后发「转语音」输入文字即可合成。</p></div><div class="cmd">转语音</div></div>
   </div>
 </section>
 
-<!-- ═══ COMMANDS ═══ -->
-<section class="sec"><p class="sk">03 · 指令</p><h2>对话<b>触发</b></h2><p class="ld">在输入框发送以下任一指令，插件自动拦截并执行。</p>
-  <div class="ct rev up d0"><div class="cr"><div class="ck">设置key</div><div class="ci">弹出 API Key 输入框，填写后保存到 config.prop <span class="ctg">一次设置</span></div></div>
-  <div class="cr"><div class="ck">设置音色</div><div class="ci">从已加载列表中选择，A–Z 字母选我的音色，数字选公开列表 <span class="ctg">需 Key</span></div></div>
-  <div class="cr"><div class="ck">音色列表</div><div class="ci">展示全部可用音色，含搜索框和试听按钮 <span class="ctg">支持搜索</span></div></div>
-  <div class="cr"><div class="ck">转语音</div><div class="ci">打开文字输入面板 → 转换 → 播放试听或发送语音消息 <span class="ctg">核心功能</span></div></div></div>
-</section>
-
-<!-- ═══ API ═══ -->
-<section class="sec" id="api"><p class="sk">04 · 接口</p><h2>API<b>端点</b></h2><p class="ld">插件内部调用的 Fish Audio 服务接口，Bearer Token 认证。</p>
-  <div class="ap">
-    <div class="ac rev up d0"><div class="method">GET</div><h5>我的音色</h5><code>api.fish.audio/model<br>?self=true<br>&page_size=100</code></div>
-    <div class="ac rev up d1"><div class="method">GET</div><h5>公开音色列表</h5><code>api.fish.audio/model<br>?language=zh<br>&page_size=500<br>&sort_by=score</code></div>
-    <div class="ac rev up d2"><div class="method">POST</div><h5>文字转语音</h5><code>api.fish.audio/v1/tts<br>model: s2-pro<br>format: mp3</code></div>
-    <div class="ac rev up d3"><div class="method">HEADER</div><h5>认证方式</h5><code>Authorization:<br>Bearer {api_key}</code></div>
+<!-- ═══════ COMMANDS ═══════ -->
+<section class="sec"><p class="sk">03 — 指令</p><h2>对话<i>触发</i></h2><p class="ld">聊天框输入以下任一指令，插件自动拦截执行。</p>
+  <div class="ct rev d0">
+    <div class="cr"><div class="ck">设置key</div><div class="ci">API Key 输入弹窗，保存到 config.prop<span class="ctg">一次</span></div></div>
+    <div class="cr"><div class="ck">设置音色</div><div class="ci">A–Z 选我的音色，数字选公开列表<span class="ctg">需 Key</span></div></div>
+    <div class="cr"><div class="ck">音色列表</div><div class="ci">展示全部音色面板，含搜索框 &amp; 试听<span class="ctg">搜索</span></div></div>
+    <div class="cr"><div class="ck">转语音</div><div class="ci">文字输入 → 合成 → 播放试听 / 发送语音<span class="ctg">核心</span></div></div>
   </div>
 </section>
 
-<!-- ═══ CODE ═══ -->
-<section class="sec"><p class="sk">05 · 源码</p><h2>核心<b>片段</b></h2><p class="ld">DC() — 接收文字，POST 请求 TTS 接口，流式读取 mp3 并缓存。</p>
-  <div class="cb rev up d0">
-    <div class="cbt"><span class="dot dt"></span><span class="dot df"></span><span class="dot dm"></span><span class="cbl">fish-audio-tts.java</span></div>
-    <pre>void DC(String x, View b) { toast("正在转换…"); new Thread(() -> {
-    try {
-        var r = new JSONObject();
-        r.put("text", x);  r.put("reference_id", a0);
-        r.put("format", "mp3");  r.put("normalize", true);
+<!-- ═══════ API ═══════ -->
+<section class="sec"><p class="sk">04 — 接口</p><h2>API<i>端点</i></h2><p class="ld">Fish Audio 服务接口，Bearer Token 认证。</p>
+  <div class="ap rev d0">
+    <div class="ac"><div class="method">GET</div><h5>我的音色</h5><code>api.fish.audio/model<br>?self=true<br>&amp;page_size=100</code></div>
+    <div class="ac"><div class="method">GET</div><h5>公开音色</h5><code>api.fish.audio/model<br>?language=zh<br>&amp;page_size=500</code></div>
+    <div class="ac"><div class="method">POST</div><h5>文字转语音</h5><code>api.fish.audio/v1/tts<br>model: s2-pro<br>format: mp3</code></div>
+    <div class="ac"><div class="method">HEADER</div><h5>认证方式</h5><code>Authorization:<br>Bearer {api_key}</code></div>
+  </div>
+</section>
 
-        var cn = (HttpURLConnection) new URL(
-            "https://api.fish.audio/v1/tts"
-        ).openConnection();
-        cn.setRequestMethod("POST");  cn.setDoOutput(true);
-        cn.setRequestProperty("Authorization", "Bearer " + a2);
-        cn.setRequestProperty("Content-Type", "application/json");
-        cn.setRequestProperty("model", "s2-pro");
+<!-- ═══════ CODE ═══════ -->
+<section class="sec"><p class="sk">05 — 源码</p><h2>核心<i>函数</i></h2><p class="ld">DC() — 文字 → POST TTS → 流式读 mp3 → 缓存。</p>
+  <div class="cb rev d0">
+    <div class="cbt"><span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span><span class="cbl">fish-audio-tts.java</span></div>
+    <pre>void DC(String x, View b) {
+    toast("正在转换…");
+    new Thread(() -> {
+        try {
+            var r = new JSONObject();
+            r.put("text", x);
+            r.put("reference_id", a0);
+            r.put("format", "mp3");
+            r.put("normalize", true);
 
-        var o = cn.getOutputStream();
-        o.write(r.toString().getBytes("UTF-8"));
-        o.flush(); o.close();
+            var cn = (HttpURLConnection)
+                new URL("https://api.fish.audio/v1/tts")
+                .openConnection();
+            cn.setRequestMethod("POST");
+            cn.setDoOutput(true);
+            cn.setRequestProperty("Authorization","Bearer "+a2);
+            cn.setRequestProperty("Content-Type","application/json");
+            cn.setRequestProperty("model","s2-pro");
 
-        var mp = cacheDir + "/tts_" +
-                 System.currentTimeMillis() + ".mp3";
-        var fo = new FileOutputStream(mp);
-        var ins = cn.getInputStream();
-        byte[] bf = new byte[8192]; int n;
-        while ((n = ins.read(bf)) != -1) fo.write(bf,0,n);
-        fo.close(); ins.close(); cn.disconnect();
-        s("last_mp3", mp);
-        b.post(() -> toast("转换成功"));
-    } catch (Exception e) {
-        b.post(() -> toast("转换失败"));
-    } }).start();
+            var o = cn.getOutputStream();
+            o.write(r.toString().getBytes("UTF-8"));
+            o.flush(); o.close();
+
+            var mp = cacheDir+"/tts_"+
+                     System.currentTimeMillis()+".mp3";
+            var fo = new FileOutputStream(mp);
+            var ins = cn.getInputStream();
+            byte[] bf = new byte[8192]; int n;
+            while((n=ins.read(bf))!=-1) fo.write(bf,0,n);
+            fo.close(); ins.close(); cn.disconnect();
+
+            s("last_mp3", mp);
+            b.post(()->toast("转换成功"));
+        } catch(Exception e){
+            b.post(()->toast("转换失败"));
+        }
+    }).start();
 }</pre>
   </div>
 </section>
 
-<!-- ═══ ARCH ═══ -->
-<section class="sec"><p class="sk">06 · 架构</p><h2>模块<b>分解</b></h2><p class="ld">六个模块，职责清晰，零第三方依赖。</p>
-  <div class="ah">
-    <div class="ai rev up d0"><div class="an">1</div><h4>配置持久层</h4><p>g() / s() 封装 Properties 读写，config.prop 存储 Key 与音色。onLoad 自动加载。</p><span class="af">config.prop</span></div>
-    <div class="ai rev up d1"><div class="an">2</div><h4>UI 工厂函数</h4><p>M() Dialog · T() TextView · R()/B() GradientDrawable。dp() 自适应密度。</p><span class="af">dp() · T() · R() · B()</span></div>
-    <div class="ai rev up d2"><div class="an">3</div><h4>缓存控制器</h4><p>ConcurrentHashMap + 时间戳，TTL 30 分钟（V=1800000L）。过期自动刷新。</p><span class="af">V = 1800000L</span></div>
-    <div class="ai rev up d3"><div class="an">4</div><h4>音频处理管线</h4><p>MediaPlayer 播放 → mp3ToSilk() 转换 → sendVoice() 发送语音消息。</p><span class="af">MediaPlayer · sendVoice()</span></div>
-    <div class="ai rev up d4"><div class="an">5</div><h4>音色面板系统</h4><p>LA() / LL() / LM() 构建完整 UI，含搜索、试听、选中状态管理。</p><span class="af">LA() · LL() · LM()</span></div>
-    <div class="ai rev up d5"><div class="an">6</div><h4>指令路由器</h4><p>onClickSendBtn() 统一拦截四条指令。P() 预处理缓存文件中的用户选择。</p><span class="af">onClickSendBtn() · P()</span></div>
+<!-- ═══════ ARCH ═══════ -->
+<section class="sec"><p class="sk">06 — 架构</p><h2>模块<i>分解</i></h2><p class="ld">六个模块，职责清晰，零依赖。</p>
+  <div class="ag">
+    <div class="ai rev d0"><div class="an">01</div><h4>配置持久层</h4><p>g() / s() 封装 Properties 读写，config.prop 存 Key &amp; 音色。onLoad 自动加载。</p><span class="af">config.prop</span></div>
+    <div class="ai rev d1"><div class="an">02</div><h4>UI 工厂</h4><p>M() Dialog · T() TextView · R()/B() GradientDrawable。dp() 自适应密度。</p><span class="af">dp() · T() · R()</span></div>
+    <div class="ai rev d2"><div class="an">03</div><h4>缓存控制</h4><p>ConcurrentHashMap + 时间戳，TTL 30 分钟 (V=1800000L)。过期自动刷新。</p><span class="af">V = 1800000L</span></div>
+    <div class="ai rev d3"><div class="an">04</div><h4>音频管线</h4><p>MediaPlayer 播放 → mp3ToSilk() 格式转换 → sendVoice() 发送语音消息。</p><span class="af">sendVoice()</span></div>
+    <div class="ai rev d4"><div class="an">05</div><h4>音色面板</h4><p>LA() / LL() / LM() 构建完整 UI，含搜索、试听、选中状态管理。</p><span class="af">LA() · LL()</span></div>
+    <div class="ai rev d5"><div class="an">06</div><h4>指令路由</h4><p>onClickSendBtn() 拦截四条指令。P() 预处理缓存文件中的选择状态。</p><span class="af">onClickSendBtn()</span></div>
   </div>
 </section>
 
-<!-- ═══ BASED ON ═══ -->
-<section class="sec"><p class="sk">07 · 基于</p><h2>WAuxiliary<b>模块</b></h2><p class="ld">本脚本作为 WAuxiliary 的扩展插件运行。WAuxiliary 是一个 WeChat Xposed 辅助模块，理论适配微信 8.0.44~8.0.65 国内与 PLAY 版本。</p>
-  <div class="stp">
-    <div class="s rev up d0"><div class="nm link-icon" style="font-size:36px;font-style:normal;opacity:.6">🔗</div><div><h4>模块仓库</h4><p>GitHub 开源，547 Star。支持微信多功能辅助：禁止广告、自定义 DPI、伪造版本、移除限制等。</p></div><div class="cmd"><a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv" target="_blank">仓库地址</a></div></div>
-    <div class="s rev up d1"><div class="nm link-icon" style="font-size:36px;font-style:normal;opacity:.6">📥</div><div><h4>下载模块</h4><p>最新版本 1.2.7.r1418，2026年5月31日发布。需搭配 Xposed 框架（LSPosed 等）使用。</p></div><div class="cmd"><a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank">下载页面</a></div></div>
+<!-- ═══════ BASED ON ═══════ -->
+<section class="sec"><p class="sk">07 — 基于</p><h2>WAuxiliary<i>模块</i></h2><p class="ld">本脚本作为 WAuxiliary 的扩展插件运行。WeChat Xposed 辅助模块，适配微信 8.0.44~8.0.65。</p>
+  <div class="sp">
+    <div class="s rev d0"><div class="no" style="font-size:40px;font-style:normal;opacity:.25">⟐</div><div><h4>模块仓库</h4><p>GitHub 开源，547 Star。多功能：禁止广告、自定义 DPI、伪造版本、移除限制等。</p></div><div class="cmd"><a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv" target="_blank">GitHub</a></div></div>
+    <div class="s rev d1"><div class="no" style="font-size:40px;font-style:normal;opacity:.25">↓</div><div><h4>下载模块</h4><p>最新 v1.2.7.r1418，2026.5.31 发布。搭配 LSPosed 等 Xposed 框架使用。</p></div><div class="cmd"><a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank">Releases</a></div></div>
   </div>
 </section>
 
-<!-- ═══ DOWNLOAD ═══ -->
-<section class="ds" id="download"><p class="dk">↓ 下载</p><h2>获取<em>文件</em></h2><p class="dd">一个 zip 打包所有脚本 + 依赖模块链接。解压到 Android 插件目录即可使用。</p>
+<!-- ═══════ DOWNLOAD ═══════ -->
+<section class="ds"><p class="dk">↓ 下载</p><h2>获取<em>文件</em></h2><p class="dd">zip 打包：脚本 + 配置 + 使用说明。解压即用。</p>
   <div class="dc">
-    <div class="dlc rev up d0" style="flex:1 1 340px;max-width:420px"><div class="dtp">完整脚本包 · .zip</div><h4>fish-audio-tts.zip</h4><div class="dsz">fish-audio-tts.java + config.prop + 使用说明.md · 6.2 KB</div><a href="fish-audio-tts.zip" download>📦 下载完整脚本包</a></div>
-    <div class="dlc rev up d1"><div class="dtp">依赖模块 · Xposed</div><h4>WAuxiliary</h4><div class="dsz">WeChat 辅助 v1.2.7 · GitHub</div><a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank">下载 WAuxiliary</a></div>
+    <div class="dlc rev d0"><div class="dtp">完整包 · .zip</div><h4>fish-audio-tts.zip</h4><div class="dsz">java + config + 说明 · 6.2 KB</div><a href="fish-audio-tts.zip" download>下载完整包</a></div>
+    <div class="dlc rev d1"><div class="dtp">依赖 · Xposed</div><h4>WAuxiliary</h4><div class="dsz">WeChat 辅助 · 最新版</div><a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank">去下载</a></div>
   </div>
 </section>
 
-<footer><span><b>小米线</b> · Fish Audio 文字转语音 v1.0 · 基于 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv" target="_blank">WAuxiliary</a> · 需自行申请 <b>fish.audio</b> API Key</span></footer>
+<footer><span><b>小米线</b> · Fish Audio TTS v1.0 · 基于 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv" target="_blank">WAuxiliary</a> · 需自行申请 fish.audio Key</span></footer>
 
 <script>
 (function(){
-  var els=document.querySelectorAll('.rev'),obs=new IntersectionObserver(function(entries){
-    entries.forEach(function(e){if(e.isIntersecting){e.target.style.animationPlayState='running';obs.unobserve(e.target)}})
-  },{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
-  els.forEach(function(el){el.style.animationPlayState='paused';obs.observe(el)});
-})();
+  var els=document.querySelectorAll('.rev'),obs=new IntersectionObserver(function(e){
+    e.forEach(function(x){if(x.isIntersecting){x.target.style.animationPlayState='running';obs.unobserve(x.target)}})
+  },{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+  els.forEach(function(el){el.style.animationPlayState='paused';obs.observe(el)})
+})()
 </script>
 </body>
 </html>
