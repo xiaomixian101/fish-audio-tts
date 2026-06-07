@@ -46,9 +46,9 @@ body{background:var(--w);color:var(--b);font-family:-apple-system,'PingFang SC',
 .hero .sub{font-size:15px;color:var(--g55);max-width:400px;margin-top:44px;line-height:2.2;opacity:0;animation:fadeUp .65s .28s cubic-bezier(.22,1,.36,1) forwards}
 .hero .sub b{color:var(--b);font-weight:700}
 .hero .chips{margin-top:40px;display:flex;flex-wrap:wrap;gap:0;opacity:0;animation:fadeUp .65s .42s cubic-bezier(.22,1,.36,1) forwards}
-.hero .chips span{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;border:1.5px solid var(--b);padding:10px 22px;margin-right:-1.5px;margin-bottom:-1.5px;background:var(--w);position:relative;transition:all .2s}
-.hero .chips span.on{background:var(--b);color:var(--w)}
-.hero .chips span:hover{z-index:1;transform:translateY(-2px)}
+.hero .chips span,.hero .chips a{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;border:1.5px solid var(--b);padding:10px 22px;margin-right:-1.5px;margin-bottom:-1.5px;background:var(--w);position:relative;transition:all .2s;text-decoration:none;color:var(--b)}
+.hero .chips span.on,.hero .chips a.on{background:var(--b);color:var(--w)}
+.hero .chips span:hover,.hero .chips a:hover{z-index:1;transform:translateY(-2px)}
 
 /* ═══ SECTION HEADER ═══ */
 .sec{max-width:1600px;margin:0 auto;padding:0 10vw}
@@ -85,9 +85,9 @@ body{background:var(--w);color:var(--b);font-family:-apple-system,'PingFang SC',
 .steps .st p{font-size:13px;color:var(--g55);line-height:1.9;max-width:440px;transition:color .35s}
 .steps .st:hover p{color:var(--b)}
 .steps .st p a{color:var(--b);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
-.steps .st .cmd{font-family:'DM Mono',monospace;font-size:10px;background:var(--b);color:var(--w);padding:12px 28px;white-space:nowrap;letter-spacing:2px;transition:all .3s cubic-bezier(.22,1,.36,1)}
-.steps .st .cmd a{color:var(--w);text-decoration:none}
-.steps .st:hover .cmd{outline:2px solid var(--b);outline-offset:5px}
+.steps .st .cmd,.steps .st a.cmd{font-family:'DM Mono',monospace;font-size:10px;background:var(--b);color:var(--w);padding:12px 28px;white-space:nowrap;letter-spacing:2px;transition:all .3s cubic-bezier(.22,1,.36,1);display:inline-block}
+.steps .st .cmd a,.steps .st a.cmd{color:var(--w);text-decoration:none}
+.steps .st:hover .cmd,.steps .st:hover a.cmd{outline:2px solid var(--b);outline-offset:5px}
 
 /* ═══ CMD TABLE ═══ */
 .cmds{border-top:1.5px solid var(--b)}
@@ -177,7 +177,7 @@ footer a{color:var(--b)}
   <div class="lbl"><span class="rul"></span>Android · Plugin · v1.0 · 小米线</div>
   <h1>Fish Audio<em>文字转语音</em></h1>
   <p class="sub">基于 <b>WAuxiliary</b> 模块。<br>选 AI 音色 → 输文字 → <b>一键合成语音，直接发送为消息。</b></p>
-  <div class="chips"><span class="on">↓ 下载脚本</span><span>WAuxiliary</span><span>500+ 中文音色</span><span>s2‑pro</span></div>
+  <div class="chips"><a href="#download" class="on" style="text-decoration:none;color:inherit">↓ 下载脚本</a><span>WAuxiliary</span><span>500+ 中文音色</span><span>s2‑pro</span></div>
 </header>
 
 <section class="sec"><div class="sh"><div class="shL"><div class="num">01</div><h2>六大<i>核心</i>能力</h2></div><div class="shR">一条聊天指令触发，从文字到语音消息全链路打通。</div></div>
@@ -193,7 +193,7 @@ footer a{color:var(--b)}
 
 <section class="sec"><div class="sh"><div class="shL"><div class="num">02</div><h2>三步<i>配置</i></h2></div><div class="shR">脚本运行于 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv" target="_blank">WAuxiliary</a> 模块之上，请先安装 WeChat Xposed 辅助模块。</div></div>
   <div class="steps">
-    <div class="st rev d0"><div class="n">1</div><div><h4>安装 WAuxiliary + 脚本</h4><p>先装 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank">WAuxiliary 模块</a>，把 fish-audio-tts.java 放入插件目录即可。</p></div><div class="cmd">下载脚本</div></div>
+    <div class="st rev d0"><div class="n">1</div><div><h4>安装 WAuxiliary + 脚本</h4><p>先装 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank">WAuxiliary 模块</a>，把 fish-audio-tts.java 放入插件目录即可。</p></div><a href="#download" class="cmd" style="text-decoration:none">下载脚本</a></div>
     <div class="st rev d1"><div class="n">2</div><div><h4>设置 API Key</h4><p>聊天框发送「设置key」→ 弹窗输入 Fish Audio API Key → 保存到本地配置。</p></div><div class="cmd">设置key</div></div>
     <div class="st rev d2"><div class="n">3</div><div><h4>选音色，开转</h4><p>发送「音色列表」浏览试听 → 发送「转语音」输入文字 → 一键合成。</p></div><div class="cmd">转语音</div></div>
   </div>
