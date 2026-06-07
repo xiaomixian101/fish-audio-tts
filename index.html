@@ -163,9 +163,9 @@ footer b{color:var(--ink);font-weight:500}
 <header class="hero">
   <div class="watermark" aria-hidden="true">TTS</div>
   <div class="hero-content">
-    <p class="overline">Android Plugin · v1.0 · 小米线</p>
+    <p class="overline">Android Plugin · v1.0 · 傻逼咸鱼</p>
     <h1>Fish Audio<br><em>文字转语音</em></h1>
-    <p class="desc">输入文字，选择 AI 音色，一键合成为自然语音并发送为消息。基于 Fish Audio s2-pro 模型，500+ 中文音色即时可用。</p>
+    <p class="desc">基于 <b>WAuxiliary</b> 模块的 WeChat 文字转语音插件。输入文字，选择 AI 音色，一键合成为自然语音并发送为消息。Fish Audio s2-pro 模型，500+ 中文音色。</p>
     <div class="btns">
       <a href="#download" class="primary">↓ 下载脚本</a>
       <a href="#usage">使用方法</a>
@@ -201,11 +201,11 @@ footer b{color:var(--ink);font-weight:500}
 <section class="sec" id="usage">
   <p class="sec-kicker">02 · 使用</p>
   <h2>三步<b>配置</b></h2>
-  <p class="lead">复制脚本到插件目录，三条聊天指令即可开始。</p>
+  <p class="lead">本脚本运行于 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv" target="_blank" style="color:var(--ink);text-decoration:underline;">WAuxiliary</a>（WeChat Xposed 模块）之上，请先安装 WAuxiliary。</p>
   <div class="steps">
     <div class="step reveal">
       <div class="num">1</div>
-      <div><h4>安装脚本</h4><p>将 fish-audio-tts.java 复制到你的 Android 插件目录中，启动后自动加载。</p></div>
+      <div><h4>安装 WAuxiliary + 脚本</h4><p>先安装 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank" style="color:var(--ink);text-decoration:underline;">WAuxiliary 模块</a>，再将 fish-audio-tts.java 放入插件目录，启动后自动加载。</p></div>
       <div class="cmd">下载脚本</div>
     </div>
     <div class="step reveal">
@@ -312,29 +312,54 @@ footer b{color:var(--ink);font-weight:500}
   </div>
 </section>
 
+<!-- ═══════════ BASED ON ═══════════ -->
+<section class="sec">
+  <p class="sec-kicker">07 · 基于</p>
+  <h2>WAuxiliary<b>模块</b></h2>
+  <p class="lead">本脚本作为 WAuxiliary 的扩展插件运行。WAuxiliary 是一个 WeChat Xposed 辅助模块，理论适配微信 8.0.44~8.0.65 国内与 PLAY 版本。</p>
+  <div class="steps">
+    <div class="step reveal">
+      <div class="num">🔗</div>
+      <div><h4>模块仓库</h4><p>GitHub 开源，547 Star。支持微信多功能辅助：禁止广告、自定义 DPI、伪造版本、移除限制等。</p></div>
+      <div class="cmd"><a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv" target="_blank" style="color:var(--paper);text-decoration:none;">仓库地址</a></div>
+    </div>
+    <div class="step reveal">
+      <div class="num">📥</div>
+      <div><h4>下载模块</h4><p>最新版本 1.2.7.r1418，2026年5月31日发布。需搭配 Xposed 框架（LSPosed 等）使用。</p></div>
+      <div class="cmd"><a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank" style="color:var(--paper);text-decoration:none;">下载页面</a></div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════ DOWNLOAD ═══════════ -->
 <section class="dl-section" id="download">
   <p class="dl-kicker">↓ 下载</p>
   <h2>获取<em>脚本</em></h2>
-  <p class="dl-desc">两个文件。复制到 Android 插件目录即可使用。</p>
+  <p class="dl-desc">两个文件 + 依赖模块。复制到 Android 插件目录即可使用。</p>
   <div class="dl-cards">
     <div class="dl-card reveal">
       <div class="dl-type">主脚本 · .java</div>
       <h4>fish-audio-tts.java</h4>
-      <div class="dl-size">20.3 KB · 52 行</div>
+      <div class="dl-size">20.3 KB</div>
       <a href="fish-audio-tts.java" download>下载脚本</a>
     </div>
     <div class="dl-card reveal">
       <div class="dl-type">配置文件 · .prop</div>
       <h4>config.prop</h4>
-      <div class="dl-size">模板文件 · 166 B</div>
+      <div class="dl-size">模板文件</div>
       <a href="config.prop" download>下载配置模板</a>
+    </div>
+    <div class="dl-card reveal">
+      <div class="dl-type">依赖模块 · Xposed</div>
+      <h4>WAuxiliary</h4>
+      <div class="dl-size">WeChat 辅助模块 v1.2.7</div>
+      <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv/releases" target="_blank">下载 WAuxiliary</a>
     </div>
   </div>
 </section>
 
 <footer>
-  <span><b>小米线</b> · Fish Audio 文字转语音 v1.0 · 需自行申请 <b>fish.audio</b> API Key</span>
+  <span><b>傻逼咸鱼</b> · Fish Audio 文字转语音 v1.0 · 基于 <a href="https://github.com/Xposed-Modules-Repo/me.hd.wauxv" target="_blank" style="color:var(--fade);">WAuxiliary</a> · 需自行申请 <b>fish.audio</b> API Key</span>
 </footer>
 
 <script>
