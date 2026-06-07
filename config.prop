@@ -1,0 +1,5 @@
+# Fish Audio TTS 插件配置文件
+# 由插件自动管理，也可以手动编辑
+fish_key=YOUR_API_KEY_HERE
+voice_id=YOUR_VOICE_ID_HERE
+voice_name=未选择音色
