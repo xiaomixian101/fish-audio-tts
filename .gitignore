@@ -1,0 +1,8 @@
+﻿node_modules/
+site.zip
+surge-login.txt
+env.txt
+deploy-surge.js
+.localtunnel-url.txt
+package.json
+package-lock.json
