@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>小米线 · 产品实验室</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,opsz,wght@0,5..120,400;0,5..120,500;0,5..120,600;0,5..120,700;1,5..120,500&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   :root {
     --bg:#FAFAF7; --fg:#0D0D0D; --muted:#999; --border:#E6E6E3; --surface:#F3F3F0;
@@ -390,32 +389,36 @@ function switchModal(type){closeModal();openModal(type)}
 function openProfileModal(){closeModal();document.getElementById('modalProfile').classList.add('show')}
 document.querySelectorAll('.modal-overlay').forEach(ov=>ov.addEventListener('click',function(e){if(e.target===this)closeModal()}));
 
-// ═══════ SUPABASE ═══════
+// ═══════ SUPABASE REST API (no SDK, pure fetch) ═══════
 const SB_URL='https://aarflekuewppseizlcyw.supabase.co';
 const SB_KEY='sb_publishable_rTCqG85lF-jYxTeP8q5e6A_IEtRdXTa';
-var supabase = null;
+var currentUser = null;
+var accessToken = '';
 
-function waitForSupabase(cb, tries) {
-  tries = tries || 0;
-  if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-    supabase = window.supabase.createClient(SB_URL, SB_KEY);
-    cb();
-  } else if (tries < 30) {
-    setTimeout(function() { waitForSupabase(cb, tries + 1); }, 300);
+// 检查本地存储的 session
+(function restoreSession() {
+  var saved = localStorage.getItem('sb_session');
+  if (saved) {
+    try {
+      var session = JSON.parse(saved);
+      accessToken = session.access_token;
+      currentUser = session.user;
+      updateUIForUser(currentUser);
+    } catch(e) {
+      localStorage.removeItem('sb_session');
+    }
+  }
+})();
+
+function saveSession(data) {
+  accessToken = data.access_token || '';
+  currentUser = data.user || null;
+  if (accessToken && currentUser) {
+    localStorage.setItem('sb_session', JSON.stringify(data));
   } else {
-    toast('SDK 加载失败，请刷新页面');
+    localStorage.removeItem('sb_session');
   }
 }
-
-waitForSupabase(function() {
-  supabase.auth.getSession().then(function(r) {
-    if (r.data && r.data.session && r.data.session.user) updateUIForUser(r.data.session.user);
-  }).catch(function() {});
-  supabase.auth.onAuthStateChange(function(ev, session) {
-    if (session && session.user) updateUIForUser(session.user);
-    else updateUIForGuest();
-  });
-});
 
 function updateUIForUser(user){
   document.getElementById('navLogin').style.display='none';
@@ -435,7 +438,6 @@ function updateUIForGuest(){
 }
 
 async function handleLogin(){
-  if (!supabase) { toast('系统正在初始化，请稍后再试'); return; }
   document.getElementById('loginEmailErr').style.display='none';document.getElementById('loginPasswordErr').style.display='none';
   const email=document.getElementById('loginEmail').value.trim(),pass=document.getElementById('loginPassword').value;
   if(!email){document.getElementById('loginEmailErr').textContent='请输入邮箱';document.getElementById('loginEmailErr').style.display='block';return}
@@ -443,15 +445,25 @@ async function handleLogin(){
   if(!pass){document.getElementById('loginPasswordErr').textContent='请输入密码';document.getElementById('loginPasswordErr').style.display='block';return}
   const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='登录中';
   try{
-    const {data,error}=await supabase.auth.signInWithPassword({email,password:pass});
+    const res = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
+      body: JSON.stringify({ email: email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) { btn.disabled=false;btn.textContent='登 录'; toast(data.msg||data.error_description||'邮箱或密码错误'); return; }
+    // Fetch user info
+    const userRes = await fetch(SB_URL + '/auth/v1/user', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + data.access_token }
+    });
+    const userData = await userRes.json();
+    saveSession({ access_token: data.access_token, user: userData });
+    toast('登录成功'); updateUIForUser(userData);
     btn.disabled=false;btn.textContent='登 录';
-    if(error){toast(error.message.includes('Invalid')?'邮箱或密码错误':error.message)}
-    else if(data.user){toast('登录成功');updateUIForUser(data.user)}
   }catch(e){btn.disabled=false;btn.textContent='登 录';toast('网络错误，请刷新重试')}
 }
 
 async function handleRegister(){
-  if (!supabase) { toast('系统正在初始化，请稍后再试'); return; }
   document.getElementById('regEmailErr').style.display='none';document.getElementById('regPasswordErr').style.display='none';
   const email=document.getElementById('regEmail').value.trim(),pass=document.getElementById('regPassword').value,nick=document.getElementById('regNickname').value.trim();
   if(!email){document.getElementById('regEmailErr').textContent='请输入邮箱';document.getElementById('regEmailErr').style.display='block';return}
@@ -460,23 +472,63 @@ async function handleRegister(){
   if(pass.length<6){document.getElementById('regPasswordErr').textContent='至少 6 位字符';document.getElementById('regPasswordErr').style.display='block';return}
   const btn=document.getElementById('regBtn');btn.disabled=true;btn.textContent='注册中';
   try{
-    const {data,error}=await supabase.auth.signUp({email,password:pass,options:{data:{nickname:nick||email.split('@')[0]}}});
+    const res = await fetch(SB_URL + '/auth/v1/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
+      body: JSON.stringify({
+        email: email,
+        password: pass,
+        data: { nickname: nick || email.split('@')[0] }
+      })
+    });
+    const data = await res.json();
     btn.disabled=false;btn.textContent='注 册';
-    if(error){toast(error.message.includes('already')?'该邮箱已注册':error.message)}
-    else if(data.user){if(data.session){toast('注册成功');updateUIForUser(data.user)}else{toast('注册成功，请登录');switchModal('login')}}
+    if (!res.ok) { toast(data.msg||data.error_description||'注册失败，该邮箱可能已注册'); return; }
+    // 如果邮箱确认已关闭，注册可能直接返回 session
+    if (data.access_token) {
+      const userRes = await fetch(SB_URL + '/auth/v1/user', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + data.access_token }
+      });
+      const userData = await userRes.json();
+      saveSession({ access_token: data.access_token, user: userData });
+      toast('注册成功'); updateUIForUser(userData);
+    } else {
+      // 需要邮箱验证或已关闭验证但需要先登录
+      toast('注册成功，请登录'); switchModal('login');
+    }
   }catch(e){btn.disabled=false;btn.textContent='注 册';toast('网络错误，请刷新重试')}
 }
 
 async function handleLogout(){
-  if (!supabase) return;
-  await supabase.auth.signOut();updateUIForGuest();toast('已退出')
+  if (accessToken) {
+    await fetch(SB_URL + '/auth/v1/logout', {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + accessToken }
+    }).catch(function(){});
+  }
+  saveSession({ access_token: '', user: null });
+  updateUIForGuest();
+  toast('已退出');
 }
+
 async function handleUpdateProfile(){
-  if (!supabase) { toast('系统初始化中'); return; }
+  if (!accessToken) { toast('请先登录'); return; }
   const nick=document.getElementById('profileNickname').value.trim();
   if(!nick){toast('请输入昵称');return}
-  const {error}=await supabase.auth.updateUser({data:{nickname:nick}});
-  if(error){toast(error.message)}else{document.getElementById('navAvatar').textContent=nick[0].toUpperCase();document.getElementById('modalProfile').classList.remove('show');toast('资料已更新')}
+  try {
+    const res = await fetch(SB_URL + '/auth/v1/user', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + accessToken },
+      body: JSON.stringify({ data: { nickname: nick } })
+    });
+    const data = await res.json();
+    if (!res.ok) { toast(data.msg||'更新失败'); return; }
+    currentUser = data;
+    saveSession({ access_token: accessToken, user: data });
+    document.getElementById('navAvatar').textContent=nick[0].toUpperCase();
+    document.getElementById('modalProfile').classList.remove('show');
+    toast('资料已更新');
+  } catch(e) { toast('网络错误'); }
 }
 function toggleDropdown(){document.getElementById('dropdownMenu').classList.toggle('show')}
 document.addEventListener('click',function(e){if(!e.target.closest('.dropdown'))document.getElementById('dropdownMenu').classList.remove('show')});
