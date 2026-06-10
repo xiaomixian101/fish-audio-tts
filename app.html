@@ -235,6 +235,12 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // ── Global error catch ──
+  window.onerror = function(msg) {
+    showToast('出错了: ' + String(msg).slice(0, 80), 'error');
+    document.querySelectorAll('.btn.loading').forEach(b => { b.classList.remove('loading'); b.disabled = false; });
+  };
+
   // ── Supabase Init ──
   const SUPABASE_URL = 'https://aarflekuewppseizlcyw.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_rTCqG85lF-jYxTeP8q5e6A_IEtRdXTa';
@@ -380,21 +386,35 @@
     const btn = document.getElementById('regBtn');
     btn.classList.add('loading'); btn.disabled = true;
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { nickname: nickname || email.split('@')[0] } }
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { nickname: nickname || email.split('@')[0] } }
+      });
 
-    btn.classList.remove('loading'); btn.disabled = false;
+      btn.classList.remove('loading'); btn.disabled = false;
 
-    if (error) {
-      showFieldErr('regEmailErr', error.message.includes('already') ? '该邮箱已注册' : error.message);
-    } else if (data.user?.identities?.length === 0) {
-      showToast('该邮箱已注册，请直接登录', 'error');
-    } else {
-      showToast('注册成功！请查看邮箱验证链接', 'success');
-      document.querySelector('.tab[data-form="login"]').click();
+      if (error) {
+        if (error.message.includes('already')) {
+          showToast('该邮箱已注册，请直接登录', 'error');
+        } else {
+          showToast(error.message, 'error');
+        }
+      } else if (data.user) {
+        // 如果没开邮箱验证，直接登录
+        if (data.session) {
+          showToast('注册成功！', 'success');
+        } else {
+          showToast('注册成功！请查看邮箱验证链接（或关闭邮箱验证即可直接登录）', 'success');
+          document.querySelector('.tab[data-form="login"]').click();
+        }
+      } else {
+        showToast('注册失败，请稍后再试', 'error');
+      }
+    } catch (e) {
+      btn.classList.remove('loading'); btn.disabled = false;
+      showToast('请求失败: ' + e.message, 'error');
     }
   }
 
