@@ -5,12 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fish Audio TTS — 用户中心</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #FAFAF8; --fg: #0A0A0A; --muted: #888888;
     --border: #E8E8E8; --surface: #F5F5F2; --white: #FFFFFF;
-    --radius-sm: 12px; --radius-md: 18px; --radius-lg: 28px; --radius-full: 999px;
+    --radius-lg: 28px; --radius-full: 999px;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -18,120 +17,63 @@
   body {
     font-family:'Plus Jakarta Sans', -apple-system, sans-serif;
     background:var(--bg); color:var(--fg);
-    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
     position:relative; overflow-x:hidden;
   }
-  .noise-overlay {
-    position:fixed; inset:0; pointer-events:none; z-index:9999; opacity:0.018;
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size:140px 140px;
-  }
-  .bg-blobs { position:fixed; inset:0; pointer-events:none; z-index:0; }
-  .blob { position:absolute; border-radius:50%; animation:blobFloat 22s ease-in-out infinite; }
-  .blob:nth-child(1) { width:600px; height:600px; top:-180px; left:-140px; background:radial-gradient(circle at 35% 35%, rgba(0,0,0,0.02), transparent 65%); }
-  .blob:nth-child(2) { width:440px; height:440px; bottom:-120px; right:-100px; background:radial-gradient(circle at 65% 65%, rgba(0,0,0,0.015), transparent 65%); animation-delay:-8s; }
-  @keyframes blobFloat { 0%,100%{transform:translate(0,0) scale(1);} 25%{transform:translate(24px,-30px) scale(1.04);} 50%{transform:translate(-16px,20px) scale(0.96);} 75%{transform:translate(-22px,-10px) scale(1.02);} }
-
-  /* ── Card ── */
   .card {
-    position:relative; z-index:1;
-    width:420px; max-width:92vw;
-    background:var(--white);
-    border:1px solid var(--border);
-    border-radius:var(--radius-lg);
-    padding:48px 40px;
-    box-shadow:0 1px 2px rgba(0,0,0,0.02), 0 12px 40px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.01);
-    animation:cardIn 0.7s var(--ease-out) both;
-    transition:box-shadow 0.5s var(--ease-out);
+    position:relative; z-index:1; width:420px; max-width:92vw;
+    background:var(--white); border:1px solid var(--border);
+    border-radius:var(--radius-lg); padding:48px 40px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.02), 0 12px 40px rgba(0,0,0,0.05);
+    transition:box-shadow 0.5s;
   }
   .card:hover { box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 20px 60px rgba(0,0,0,0.08); }
-  @keyframes cardIn { from{opacity:0;transform:translateY(36px) scale(0.96);} to{opacity:1;transform:translateY(0) scale(1);} }
-
-  /* ── Logo ── */
-  .logo { width:48px; height:48px; border:2px solid var(--fg); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:22px; font-weight:700; font-style:italic; margin-bottom:32px; animation:logoPop 0.6s var(--ease-spring) 0.1s both; }
-  @keyframes logoPop { from{opacity:0;transform:rotate(-12deg) scale(0.5);} to{opacity:1;transform:rotate(0) scale(1);} }
-  .logo-pulse { animation:logoPop 0.6s var(--ease-spring) 0.1s both, pulse 3s ease-in-out 1s infinite; }
-  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,0,0,0);} 50%{box-shadow:0 0 0 10px rgba(0,0,0,0.04);} }
-
-  /* ── Tabs ── */
+  .logo { width:48px; height:48px; border:2px solid var(--fg); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:22px; font-weight:700; font-style:italic; margin-bottom:32px; color:var(--fg); }
   .tabs { display:flex; gap:4px; background:var(--surface); border-radius:var(--radius-full); padding:4px; margin-bottom:36px; }
-  .tab { flex:1; text-align:center; padding:12px; border-radius:var(--radius-full); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.35s var(--ease-out); color:var(--muted); border:none; background:none; font-family:inherit; letter-spacing:0.02em; }
+  .tab { flex:1; text-align:center; padding:12px; border-radius:var(--radius-full); font-size:13px; font-weight:600; cursor:pointer; color:var(--muted); border:none; background:none; font-family:inherit; }
   .tab.active { background:var(--white); color:var(--fg); box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-
-  /* ── Forms ── */
   .form { display:none; }
-  .form.active { display:block; animation:fadeUp 0.4s var(--ease-out) both; }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
-
+  .form.active { display:block; }
   .field { margin-bottom:20px; }
-  .field label { display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:8px; transition:color 0.3s; }
-  .field:focus-within label { color:var(--fg); }
-  .input-pill { display:flex; align-items:center; background:var(--surface); border-radius:var(--radius-full); border:1.5px solid transparent; transition:all 0.4s var(--ease-out); }
+  .field label { display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:8px; }
+  .input-pill { display:flex; background:var(--surface); border-radius:var(--radius-full); border:1.5px solid transparent; transition:all 0.3s; }
   .field:focus-within .input-pill { border-color:rgba(0,0,0,0.12); background:var(--white); box-shadow:0 0 0 4px rgba(0,0,0,0.04); }
-  .input-pill input { flex:1; background:transparent; border:none; outline:none; padding:14px 18px; font-size:14px; font-family:inherit; color:var(--fg); letter-spacing:0.01em; }
+  .input-pill input { flex:1; background:transparent; border:none; outline:none; padding:14px 18px; font-size:14px; font-family:inherit; color:var(--fg); }
   .input-pill input::placeholder { color:#C0C0BA; }
   .error-msg { font-size:11px; color:#D32F2F; margin-top:6px; display:none; }
-
-  .btn {
-    width:100%; font-family:'Syne',sans-serif; font-size:14px; font-weight:700;
-    letter-spacing:0.06em; text-transform:uppercase; padding:16px;
-    border-radius:var(--radius-full); cursor:pointer; border:2px solid var(--fg);
-    transition:all 0.45s var(--ease-out); position:relative; overflow:hidden;
-    margin-top:8px;
-  }
-  .btn-primary { background:var(--fg); color:var(--bg); }
-  .btn-primary:hover { background:var(--bg); color:var(--fg); box-shadow:0 0 0 8px rgba(0,0,0,0.04); }
-  .btn:disabled { opacity:0.5; cursor:not-allowed; }
-  .btn .spinner { display:none; width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; }
-  .btn.loading .spinner { display:inline-block; }
-  .btn.loading .btn-text { display:none; }
-  @keyframes spin { to{transform:rotate(360deg);} }
-
-  .divider-text { text-align:center; font-size:11px; color:var(--muted); margin:24px 0; position:relative; }
-  .divider-text::before,.divider-text::after { content:''; position:absolute; top:50%; width:30%; height:1px; background:var(--border); }
-  .divider-text::before { left:0; } .divider-text::after { right:0; }
-
-  /* ── Dashboard ── */
+  .btn { width:100%; font-family:'Syne',sans-serif; font-size:14px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:16px; border-radius:var(--radius-full); cursor:pointer; border:2px solid var(--fg); margin-top:8px; background:var(--fg); color:var(--bg); }
+  .btn:hover { background:var(--bg); color:var(--fg); }
+  .btn:disabled { opacity:0.6; cursor:not-allowed; }
   .dashboard { display:none; }
-  .dashboard.active { display:block; animation:fadeUp 0.5s var(--ease-out) both; }
-
+  .dashboard.active { display:block; }
   .user-header { display:flex; align-items:center; gap:16px; margin-bottom:36px; }
   .avatar { width:56px; height:56px; border-radius:50%; background:var(--fg); color:var(--bg); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:24px; font-weight:700; }
   .user-info h2 { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; margin-bottom:4px; }
   .user-info p { font-size:13px; color:var(--muted); }
-  .menu-item { display:flex; align-items:center; gap:12px; padding:16px 20px; border-radius:var(--radius-md); cursor:pointer; transition:all 0.35s var(--ease-out); margin-bottom:4px; }
+  .menu-item { display:flex; align-items:center; gap:12px; padding:16px 20px; border-radius:18px; cursor:pointer; transition:background 0.3s; margin-bottom:4px; font-size:14px; font-weight:500; }
   .menu-item:hover { background:var(--surface); }
-  .menu-item svg { width:20px; height:20px; color:var(--muted); transition:color 0.3s; }
-  .menu-item:hover svg { color:var(--fg); }
-  .menu-item span { font-size:14px; font-weight:500; }
-
   .profile-form { display:none; margin-top:24px; }
-  .profile-form.active { display:block; animation:fadeUp 0.4s var(--ease-out) both; }
-
-  .toast { position:fixed; bottom:36px; left:50%; transform:translateX(-50%) translateY(120px); background:var(--fg); color:var(--bg); padding:14px 28px; border-radius:var(--radius-full); font-size:13px; font-weight:500; z-index:100; opacity:0; transition:all 0.5s var(--ease-spring); pointer-events:none; }
+  .profile-form.active { display:block; }
+  .divider-text { text-align:center; font-size:11px; color:var(--muted); margin:20px 0; }
+  .toast { position:fixed; bottom:36px; left:50%; transform:translateX(-50%) translateY(120px); background:var(--fg); color:var(--bg); padding:14px 28px; border-radius:var(--radius-full); font-size:13px; font-weight:500; z-index:100; opacity:0; transition:all 0.5s; pointer-events:none; }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   .toast.error { background:#D32F2F; }
   .toast.success { background:#1B5E20; }
-
   @media(max-width:500px){ .card{padding:36px 24px;} .user-header{flex-direction:column;text-align:center;} }
 </style>
 </head>
 <body>
-<div class="noise-overlay" aria-hidden="true"></div>
-<div class="bg-blobs" aria-hidden="true"><div class="blob"></div><div class="blob"></div></div>
 
 <main class="card" id="mainCard">
-  <!-- Logo -->
   <div class="logo" id="logo">W</div>
 
-  <!-- Tabs -->
   <div class="tabs" id="tabs">
     <button class="tab active" data-form="login">登录</button>
     <button class="tab" data-form="register">注册</button>
   </div>
 
-  <!-- ═══════════ LOGIN FORM ═══════════ -->
+  <!-- LOGIN -->
   <form class="form active" id="loginForm" onsubmit="return false">
     <div class="field">
       <label>邮箱</label>
@@ -143,20 +85,14 @@
       <div class="input-pill"><input type="password" id="loginPassword" placeholder="输入密码" autocomplete="current-password"></div>
       <div class="error-msg" id="loginPasswordErr"></div>
     </div>
-    <button class="btn btn-primary" id="loginBtn" onclick="handleLogin()">
-      <span class="btn-text">登 录</span>
-      <span class="spinner"></span>
-    </button>
-    <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--muted);">
-      <a href="#" style="color:var(--fg);text-decoration:none;font-weight:600;" onclick="showReset()">忘记密码？</a>
-    </p>
+    <button class="btn" id="loginBtn" onclick="handleLogin()">登 录</button>
   </form>
 
-  <!-- ═══════════ REGISTER FORM ═══════════ -->
+  <!-- REGISTER -->
   <form class="form" id="registerForm" onsubmit="return false">
     <div class="field">
       <label>邮箱</label>
-      <div class="input-pill"><input type="email" id="regEmail" placeholder="输入邮箱地址" autocomplete="email"></div>
+      <div class="input-pill"><input type="email" id="regEmail" placeholder="输入邮箱地址"></div>
       <div class="error-msg" id="regEmailErr"></div>
     </div>
     <div class="field">
@@ -168,13 +104,10 @@
       <label>昵称</label>
       <div class="input-pill"><input type="text" id="regNickname" placeholder="你的昵称" maxlength="30"></div>
     </div>
-    <button class="btn btn-primary" id="regBtn" onclick="handleRegister()">
-      <span class="btn-text">注 册</span>
-      <span class="spinner"></span>
-    </button>
+    <button class="btn" id="regBtn" onclick="handleRegister()">注 册</button>
   </form>
 
-  <!-- ═══════════ DASHBOARD ═══════════ -->
+  <!-- DASHBOARD -->
   <div class="dashboard" id="dashboard">
     <div class="user-header">
       <div class="avatar" id="avatar">W</div>
@@ -183,300 +116,218 @@
         <p id="displayEmail">user@example.com</p>
       </div>
     </div>
-
-    <div class="menu-item" onclick="toggleProfile()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-      <span>编辑个人资料</span>
-    </div>
-    <div class="menu-item" onclick="location.href='index.html'">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span>返回首页</span>
-    </div>
-    <div class="menu-item" onclick="handleLogout()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      <span>退出登录</span>
-    </div>
-
-    <!-- Edit Profile Form -->
+    <div class="menu-item" onclick="toggleProfile()">✏️ 编辑个人资料</div>
+    <div class="menu-item" onclick="location.href='index.html'">🏠 返回首页</div>
+    <div class="menu-item" onclick="handleLogout()">🚪 退出登录</div>
     <div class="profile-form" id="profileForm">
       <div class="divider-text">编辑资料</div>
       <div class="field">
         <label>昵称</label>
         <div class="input-pill"><input type="text" id="editNickname" placeholder="新昵称" maxlength="30"></div>
       </div>
-      <button class="btn btn-primary" onclick="handleUpdateProfile()">
-        <span class="btn-text">保存修改</span>
-        <span class="spinner"></span>
-      </button>
-      <p style="text-align:center;margin-top:12px;">
-        <a href="#" style="font-size:12px;color:var(--muted);text-decoration:none;" onclick="toggleProfile()">取消</a>
-      </p>
+      <button class="btn" onclick="handleUpdateProfile()">保存修改</button>
+      <p style="text-align:center;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;" onclick="toggleProfile()">取消</p>
     </div>
   </div>
-
-  <!-- Password Reset Form -->
-  <form class="form" id="resetForm" onsubmit="return false">
-    <p style="font-size:14px;color:var(--muted);margin-bottom:20px;">输入注册邮箱，我们将发送重置链接。</p>
-    <div class="field">
-      <label>邮箱</label>
-      <div class="input-pill"><input type="email" id="resetEmail" placeholder="输入邮箱地址"></div>
-    </div>
-    <button class="btn btn-primary" id="resetBtn" onclick="handleReset()">
-      <span class="btn-text">发送重置链接</span>
-      <span class="spinner"></span>
-    </button>
-    <p style="text-align:center;margin-top:12px;">
-      <a href="#" style="font-size:12px;color:var(--fg);text-decoration:none;font-weight:600;" onclick="showLogin()">返回登录</a>
-    </p>
-  </form>
 </main>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-  // ── Global error catch ──
-  window.onerror = function(msg) {
-    showToast('出错了: ' + String(msg).slice(0, 80), 'error');
-    document.querySelectorAll('.btn.loading').forEach(b => { b.classList.remove('loading'); b.disabled = false; });
-  };
-
-  // ── Supabase Init ──
-  const SUPABASE_URL = 'https://aarflekuewppseizlcyw.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_rTCqG85lF-jYxTeP8q5e6A_IEtRdXTa';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  // ── UI Elements ──
-  const tabs = document.getElementById('tabs');
-  const logo = document.getElementById('logo');
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
-  const resetForm = document.getElementById('resetForm');
-  const dashboard = document.getElementById('dashboard');
-  const profileForm = document.getElementById('profileForm');
-  const toast = document.getElementById('toast');
-
-  let toastTimer;
-
-  function showToast(msg, type) {
+  // ═══ Show loading feedback ═══
+  var toastTimer;
+  function toast(msg, type) {
     clearTimeout(toastTimer);
-    toast.textContent = msg;
-    toast.className = 'toast ' + (type || '');
-    toast.classList.add('show');
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + (type || '');
+    t.classList.add('show');
+    toastTimer = setTimeout(function() { t.classList.remove('show'); }, 3000);
   }
 
-  // ── Tab Switching ──
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      this.classList.add('active');
-      const formId = this.dataset.form;
-      [loginForm, registerForm, resetForm].forEach(f => f.classList.remove('active'));
-      if (formId === 'login') loginForm.classList.add('active');
-      if (formId === 'register') registerForm.classList.add('active');
+  // ═══ Load Supabase SDK with fallback ═══
+  function initApp() {
+    if (typeof window.supabase === 'undefined') {
+      toast('正在加载…', '');
+      setTimeout(initApp, 500);
+      return;
+    }
+    main();
+  }
+
+  function main() {
+    var supabase = window.supabase.createClient(
+      'https://aarflekuewppseizlcyw.supabase.co',
+      'sb_publishable_rTCqG85lF-jYxTeP8q5e6A_IEtRdXTa'
+    );
+
+    // Elements
+    var tabs = document.getElementById('tabs');
+    var logo = document.getElementById('logo');
+    var loginForm = document.getElementById('loginForm');
+    var registerForm = document.getElementById('registerForm');
+    var dashboard = document.getElementById('dashboard');
+    var profileForm = document.getElementById('profileForm');
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        this.classList.add('active');
+        var id = this.dataset.form;
+        loginForm.classList.toggle('active', id === 'login');
+        registerForm.classList.toggle('active', id === 'register');
+        dashboard.classList.remove('active');
+        tabs.style.display = 'flex';
+      });
+    });
+
+    function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+    function showErr(id, msg) { var el = document.getElementById(id); el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+    function clearErrs() { ['loginEmailErr','loginPasswordErr','regEmailErr','regPasswordErr'].forEach(function(id) { showErr(id, ''); }); }
+
+    function showDashboard(user) {
+      loginForm.classList.remove('active');
+      registerForm.classList.remove('active');
+      dashboard.classList.add('active');
+      tabs.style.display = 'none';
+      var name = (user.user_metadata && user.user_metadata.nickname) || (user.email || '').split('@')[0] || '用户';
+      document.getElementById('displayName').textContent = name;
+      document.getElementById('displayEmail').textContent = user.email || '';
+      document.getElementById('avatar').textContent = (name[0] || 'W').toUpperCase();
+      document.getElementById('editNickname').value = (user.user_metadata && user.user_metadata.nickname) || '';
+    }
+
+    // Check session
+    supabase.auth.getSession().then(function(r) {
+      if (r.data && r.data.session && r.data.session.user) showDashboard(r.data.session.user);
+    }).catch(function(e) { console.log('session error:', e); });
+
+    // Auth state change
+    supabase.auth.onAuthStateChange(function(event, session) {
+      if (session && session.user) showDashboard(session.user);
+    });
+
+    // ═══ Login ═══
+    window.handleLogin = async function() {
+      clearErrs();
+      var email = document.getElementById('loginEmail').value.trim();
+      var pass = document.getElementById('loginPassword').value;
+      var ok = true;
+      if (!email) { showErr('loginEmailErr', '请输入邮箱'); ok = false; }
+      else if (!validateEmail(email)) { showErr('loginEmailErr', '邮箱格式不正确'); ok = false; }
+      if (!pass) { showErr('loginPasswordErr', '请输入密码'); ok = false; }
+      if (!ok) return;
+
+      var btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.textContent = '登录中…';
+
+      try {
+        var r = await supabase.auth.signInWithPassword({ email: email, password: pass });
+        btn.disabled = false; btn.textContent = '登 录';
+        if (r.error) {
+          toast(r.error.message || '登录失败', 'error');
+        } else if (r.data && r.data.user) {
+          toast('登录成功', 'success');
+          showDashboard(r.data.user);
+        }
+      } catch(e) {
+        btn.disabled = false; btn.textContent = '登 录';
+        toast('请求失败: ' + e.message, 'error');
+      }
+    };
+
+    // ═══ Register ═══
+    window.handleRegister = async function() {
+      clearErrs();
+      var email = document.getElementById('regEmail').value.trim();
+      var pass = document.getElementById('regPassword').value;
+      var nick = document.getElementById('regNickname').value.trim();
+      var ok = true;
+      if (!email) { showErr('regEmailErr', '请输入邮箱'); ok = false; }
+      else if (!validateEmail(email)) { showErr('regEmailErr', '邮箱格式不正确'); ok = false; }
+      if (!pass) { showErr('regPasswordErr', '请输入密码'); ok = false; }
+      else if (pass.length < 6) { showErr('regPasswordErr', '密码至少 6 位'); ok = false; }
+      if (!ok) return;
+
+      var btn = document.getElementById('regBtn');
+      btn.disabled = true; btn.textContent = '注册中…';
+
+      try {
+        var r = await supabase.auth.signUp({
+          email: email,
+          password: pass,
+          options: { data: { nickname: nick || email.split('@')[0] } }
+        });
+        btn.disabled = false; btn.textContent = '注 册';
+        if (r.error) {
+          toast(r.error.message || '注册失败', 'error');
+        } else if (r.data && r.data.user) {
+          if (r.data.session) {
+            toast('注册成功！', 'success');
+          } else {
+            toast('注册成功！', 'success');
+            document.querySelector('.tab[data-form="login"]').click();
+          }
+        }
+      } catch(e) {
+        btn.disabled = false; btn.textContent = '注 册';
+        toast('请求失败: ' + e.message, 'error');
+      }
+    };
+
+    // ═══ Logout ═══
+    window.handleLogout = async function() {
+      await supabase.auth.signOut();
       dashboard.classList.remove('active');
       tabs.style.display = 'flex';
-      logo.className = 'logo';
-    });
-  });
+      document.querySelector('.tab[data-form="login"]').click();
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+      toast('已退出登录', 'success');
+    };
 
-  function showLogin() {
-    document.querySelector('.tab[data-form="login"]').click();
-    resetForm.classList.remove('active');
-  }
+    // ═══ Profile ═══
+    window.toggleProfile = function() { profileForm.classList.toggle('active'); };
+    window.handleUpdateProfile = async function() {
+      var nick = document.getElementById('editNickname').value.trim();
+      if (!nick) { toast('请输入昵称', 'error'); return; }
+      try {
+        var r = await supabase.auth.updateUser({ data: { nickname: nick } });
+        if (r.error) { toast(r.error.message, 'error'); return; }
+        document.getElementById('displayName').textContent = nick;
+        document.getElementById('avatar').textContent = nick[0].toUpperCase();
+        profileForm.classList.remove('active');
+        toast('资料已更新', 'success');
+      } catch(e) { toast('更新失败: ' + e.message, 'error'); }
+    };
 
-  function showReset() {
-    [loginForm, registerForm].forEach(f => f.classList.remove('active'));
-    resetForm.classList.add('active');
-    dashboard.classList.remove('active');
-    tabs.style.display = 'none';
-    logo.className = 'logo';
-  }
-
-  // ── Validation ──
-  function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
-
-  function showFieldErr(id, msg) {
-    const el = document.getElementById(id);
-    el.textContent = msg;
-    el.style.display = msg ? 'block' : 'none';
-  }
-
-  function clearErrors() {
-    ['loginEmailErr','loginPasswordErr','regEmailErr','regPasswordErr'].forEach(id => showFieldErr(id, ''));
-  }
-
-  // ── Auth State Listener ──
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session?.user) {
-      showDashboard(session.user);
-    }
-  });
-
-  // Check on load
-  (async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) showDashboard(session.user);
-  })();
-
-  function showDashboard(user) {
-    loginForm.classList.remove('active');
-    registerForm.classList.remove('active');
-    resetForm.classList.remove('active');
-    dashboard.classList.add('active');
-    tabs.style.display = 'none';
-    logo.className = 'logo logo-pulse';
-
-    const email = user.email || '';
-    const name = user.user_metadata?.nickname || email.split('@')[0] || '用户';
-    document.getElementById('displayName').textContent = name;
-    document.getElementById('displayEmail').textContent = email;
-    document.getElementById('avatar').textContent = (name[0] || 'W').toUpperCase();
-    document.getElementById('editNickname').value = user.user_metadata?.nickname || '';
-  }
-
-  // ── Login ──
-  async function handleLogin() {
-    clearErrors();
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    let valid = true;
-
-    if (!email) { showFieldErr('loginEmailErr', '请输入邮箱'); valid = false; }
-    else if (!validateEmail(email)) { showFieldErr('loginEmailErr', '邮箱格式不正确'); valid = false; }
-    if (!password) { showFieldErr('loginPasswordErr', '请输入密码'); valid = false; }
-    if (!valid) return;
-
-    const btn = document.getElementById('loginBtn');
-    btn.classList.add('loading'); btn.disabled = true;
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-    btn.classList.remove('loading'); btn.disabled = false;
-
-    if (error) {
-      if (error.message.includes('Invalid login')) {
-        showFieldErr('loginPasswordErr', '邮箱或密码错误');
-      } else if (error.message.includes('Email not confirmed')) {
-        showToast('请先验证邮箱（检查收件箱）', 'error');
-      } else {
-        showToast(error.message, 'error');
-      }
-    } else if (data.user) {
-      showToast('登录成功', 'success');
-      showDashboard(data.user);
-    }
-  }
-
-  // ── Register ──
-  async function handleRegister() {
-    clearErrors();
-    const email = document.getElementById('regEmail').value.trim();
-    const password = document.getElementById('regPassword').value;
-    const nickname = document.getElementById('regNickname').value.trim();
-    let valid = true;
-
-    if (!email) { showFieldErr('regEmailErr', '请输入邮箱'); valid = false; }
-    else if (!validateEmail(email)) { showFieldErr('regEmailErr', '邮箱格式不正确'); valid = false; }
-    if (!password) { showFieldErr('regPasswordErr', '请输入密码'); valid = false; }
-    else if (password.length < 6) { showFieldErr('regPasswordErr', '密码至少 6 位'); valid = false; }
-    if (!valid) return;
-
-    const btn = document.getElementById('regBtn');
-    btn.classList.add('loading'); btn.disabled = true;
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { nickname: nickname || email.split('@')[0] } }
+    // Enter key
+    document.querySelectorAll('input').forEach(function(inp) {
+      inp.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter') return;
+        if (loginForm.classList.contains('active')) window.handleLogin();
+        else if (registerForm.classList.contains('active')) window.handleRegister();
       });
-
-      btn.classList.remove('loading'); btn.disabled = false;
-
-      if (error) {
-        if (error.message.includes('already')) {
-          showToast('该邮箱已注册，请直接登录', 'error');
-        } else {
-          showToast(error.message, 'error');
-        }
-      } else if (data.user) {
-        // 如果没开邮箱验证，直接登录
-        if (data.session) {
-          showToast('注册成功！', 'success');
-        } else {
-          showToast('注册成功！请查看邮箱验证链接（或关闭邮箱验证即可直接登录）', 'success');
-          document.querySelector('.tab[data-form="login"]').click();
-        }
-      } else {
-        showToast('注册失败，请稍后再试', 'error');
-      }
-    } catch (e) {
-      btn.classList.remove('loading'); btn.disabled = false;
-      showToast('请求失败: ' + e.message, 'error');
-    }
-  }
-
-  // ── Reset Password ──
-  async function handleReset() {
-    const email = document.getElementById('resetEmail').value.trim();
-    if (!email) { showToast('请输入邮箱', 'error'); return; }
-    if (!validateEmail(email)) { showToast('邮箱格式不正确', 'error'); return; }
-
-    const btn = document.getElementById('resetBtn');
-    btn.classList.add('loading'); btn.disabled = true;
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.href
     });
 
-    btn.classList.remove('loading'); btn.disabled = false;
-
-    if (error) {
-      showToast(error.message, 'error');
-    } else {
-      showToast('重置链接已发送，请查看邮箱', 'success');
-      showLogin();
-    }
+    toast(''); // init
   }
 
-  // ── Update Profile ──
-  function toggleProfile() { profileForm.classList.toggle('active'); }
-
-  async function handleUpdateProfile() {
-    const nickname = document.getElementById('editNickname').value.trim();
-    if (!nickname) { showToast('请输入昵称', 'error'); return; }
-
-    const { data, error } = await supabase.auth.updateUser({ data: { nickname } });
-    if (error) { showToast(error.message, 'error'); return; }
-
-    document.getElementById('displayName').textContent = nickname;
-    document.getElementById('avatar').textContent = nickname[0].toUpperCase();
-    profileForm.classList.remove('active');
-    showToast('资料已更新', 'success');
-  }
-
-  // ── Logout ──
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    dashboard.classList.remove('active');
-    tabs.style.display = 'flex';
-    logo.className = 'logo';
-    document.querySelector('.tab[data-form="login"]').click();
-    showToast('已退出登录', 'success');
-  }
-
-  // ── Enter key submit ──
-  document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        if (loginForm.classList.contains('active')) handleLogin();
-        else if (registerForm.classList.contains('active')) handleRegister();
-        else if (resetForm.classList.contains('active')) handleReset();
-      }
-    });
-  });
+  // ═══ Load SDK then init ═══
+  var s = document.createElement('script');
+  s.src = 'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  s.onload = function() { initApp(); };
+  s.onerror = function() {
+    // fallback to jsdelivr
+    var s2 = document.createElement('script');
+    s2.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    s2.onload = function() { initApp(); };
+    s2.onerror = function() { toast('SDK 加载失败，网络不通', 'error'); };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
 </script>
+
 </body>
 </html>
