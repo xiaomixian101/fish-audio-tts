@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小米线 · 产品实验室</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#FAFAF8; --fg:#0A0A0A; --muted:#888; --border:#E8E8E8; --surface:#F5F5F2;
+    --ease:cubic-bezier(0.16,1,0.3,1); --spring:cubic-bezier(0.34,1.56,0.64,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+  /* ═══════════ CANVAS PARTICLES ═══════════ */
+  #bgCanvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+  /* ═══════════ NAV ═══════════ */
+  .nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 40px;transition:all 0.4s}
+  .nav.scrolled{background:rgba(250,250,248,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+  .nav-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.02em;text-decoration:none;color:var(--fg)}
+  .nav-right{display:flex;align-items:center;gap:16px}
+
+  /* ── Auth Buttons ── */
+  .nav-link{font-size:13px;font-weight:500;text-decoration:none;color:var(--muted);letter-spacing:0.03em;transition:color 0.3s;cursor:pointer}
+  .nav-link:hover{color:var(--fg)}
+  .nav-avatar{width:36px;height:36px;border-radius:50%;background:var(--fg);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s;border:none}
+  .nav-avatar:hover{transform:scale(1.08);box-shadow:0 0 0 6px rgba(0,0,0,0.06)}
+
+  /* ── Dropdown ── */
+  .dropdown{position:relative}
+  .dropdown-menu{position:absolute;top:48px;right:0;background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:8px;min-width:180px;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all 0.3s;box-shadow:0 8px 32px rgba(0,0,0,0.08)}
+  .dropdown-menu.show{opacity:1;visibility:visible;transform:translateY(0)}
+  .dropdown-menu .mi{display:block;width:100%;padding:10px 16px;border-radius:10px;font-size:13px;text-align:left;background:none;border:none;cursor:pointer;font-family:inherit;color:var(--fg);transition:background 0.2s;text-decoration:none}
+  .dropdown-menu .mi:hover{background:var(--surface)}
+
+  /* ═══════════ HERO ═══════════ */
+  .hero{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:120px 32px 80px;text-align:center}
+  .hero-inner{max-width:720px}
+  .hero-hi{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:28px;opacity:0;animation:fadeIn 0.6s 0.1s forwards}
+  .hero-title{font-family:'Syne',sans-serif;font-size:clamp(48px,7vw,80px);font-weight:800;line-height:0.94;letter-spacing:-0.04em;margin-bottom:24px}
+  .hero-title .tw{display:inline-block;opacity:0;animation:wordFly 0.8s var(--ease) forwards}
+  @keyframes wordFly{from{opacity:0;transform:translateY(50px) rotateX(-15deg);filter:blur(6px)}to{opacity:1;transform:none;filter:blur(0)}}
+  .hero-title .tw:nth-child(1){animation-delay:0.2s}.hero-title .tw:nth-child(2){animation-delay:0.27s}.hero-title .tw:nth-child(3){animation-delay:0.34s}.hero-title .tw:nth-child(4){animation-delay:0.41s}
+
+  .hero-sub{font-size:17px;color:var(--muted);line-height:1.7;max-width:480px;margin:0 auto 48px;opacity:0;animation:fadeIn 0.6s 0.5s forwards}
+  @keyframes fadeIn{to{opacity:1}}
+
+  .hero-scroll{opacity:0;animation:fadeIn 0.6s 0.7s forwards;margin-top:48px}
+  .hero-scroll span{display:block;width:1px;height:48px;background:linear-gradient(to bottom,var(--fg),transparent);margin:0 auto 12px;animation:scrollLine 2s ease-in-out infinite}
+  @keyframes scrollLine{0%,100%{transform:scaleY(0.3);opacity:0.3}50%{transform:scaleY(1);opacity:1}}
+  .hero-scroll p{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted)}
+
+  /* ═══════════ PRODUCT CARDS ═══════════ */
+  .products{position:relative;z-index:1;padding:80px 0}
+  .container{max-width:1100px;margin:0 auto;padding:0 32px}
+  .sec-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+  .sec-title{font-family:'Syne',sans-serif;font-size:clamp(36px,5vw,52px);font-weight:700;letter-spacing:-0.02em;line-height:1.1;margin-bottom:64px}
+  .product-grid{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border)}
+
+  .product-card{display:flex;align-items:center;gap:48px;background:var(--bg);padding:48px 44px;transition:all 0.5s;cursor:pointer;text-decoration:none;color:inherit;position:relative;overflow:hidden}
+  .product-card::before{content:'';position:absolute;inset:0;background:var(--surface);opacity:0;transition:opacity 0.5s;z-index:0}
+  .product-card:hover::before{opacity:1}
+  .product-card>*{position:relative;z-index:1}
+
+  .product-num{font-family:'Syne',sans-serif;font-size:56px;font-weight:800;color:var(--border);flex-shrink:0;width:60px;text-align:center;transition:all 0.5s}
+  .product-card:hover .product-num{color:var(--fg);transform:scale(1.1)}
+
+  .product-info{flex:1;min-width:0}
+  .product-info .tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:var(--fg);color:var(--bg);padding:4px 12px;border-radius:999px;margin-bottom:14px}
+  .product-info h3{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;margin-bottom:8px}
+  .product-info p{font-size:14px;color:var(--muted);line-height:1.6;max-width:400px}
+  .product-info .stats{display:flex;gap:24px;margin-top:16px;font-size:12px;color:var(--muted)}
+  .product-info .stats b{color:var(--fg);font-size:16px;font-family:'Syne',sans-serif}
+
+  .product-arrow{flex-shrink:0;opacity:0;transform:translateX(-12px);transition:all 0.5s}
+  .product-card:hover .product-arrow{opacity:1;transform:translateX(0)}
+
+  /* ═══════════ MORE COMING ═══════════ */
+  .product-card.placeholder{opacity:0.5;pointer-events:none}
+  .product-card.placeholder .product-arrow{display:none}
+  .product-card.placeholder .product-num{color:var(--border)}
+  .product-card.placeholder .tag{background:var(--border);color:var(--muted)}
+
+  /* ═══════════ FOOTER ═══════════ */
+  .ft{position:relative;z-index:1;border-top:1px solid var(--border);padding:40px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;font-size:13px;color:var(--muted)}
+  .ft a{color:var(--fg);text-decoration:none;font-weight:600}
+
+  /* ═══════════ MODALS ═══════════ */
+  .modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.3);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.35s}
+  .modal-overlay.show{opacity:1;visibility:visible}
+  .modal{background:var(--bg);border:1px solid var(--border);border-radius:24px;padding:40px 36px;width:400px;max-width:92vw;max-height:85vh;overflow-y:auto;transform:translateY(20px) scale(0.96);transition:all 0.4s var(--spring)}
+  .modal-overlay.show .modal{transform:translateY(0) scale(1)}
+  .modal h3{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;margin-bottom:24px}
+  .modal .field{margin-bottom:18px}
+  .modal .field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px}
+  .modal .input-pill{display:flex;background:var(--surface);border-radius:999px;border:1.5px solid transparent;transition:all 0.3s}
+  .modal .input-pill:focus-within{border-color:rgba(0,0,0,0.12);background:var(--bg);box-shadow:0 0 0 4px rgba(0,0,0,0.04)}
+  .modal .input-pill input{flex:1;background:transparent;border:none;outline:none;padding:14px 18px;font-size:14px;font-family:inherit;color:var(--fg)}
+  .modal .input-pill input::placeholder{color:#C0C0BA}
+  .modal .err{font-size:11px;color:#D32F2F;margin-top:4px;display:none}
+  .modal .btn{width:100%;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:16px;border-radius:999px;border:2px solid var(--fg);background:var(--fg);color:var(--bg);cursor:pointer;transition:all 0.4s;margin-top:4px}
+  .modal .btn:hover{background:var(--bg);color:var(--fg)}
+  .modal .btn:disabled{opacity:0.5;cursor:not-allowed}
+  .modal .switch{text-align:center;margin-top:16px;font-size:12px;color:var(--muted)}
+  .modal .switch a{color:var(--fg);font-weight:600;text-decoration:none;cursor:pointer}
+  .modal .close{position:absolute;top:20px;right:20px;width:32px;height:32px;border-radius:50%;border:none;background:var(--surface);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.3s;color:var(--muted)}
+  .modal .close:hover{background:var(--fg);color:var(--bg)}
+
+  /* ── Toast ── */
+  .toast{position:fixed;bottom:36px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--fg);color:var(--bg);padding:14px 28px;border-radius:999px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:all 0.5s var(--spring);pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:700px){
+    .product-card{flex-direction:column;gap:20px;padding:36px 24px}
+    .product-num{font-size:36px;width:auto}
+    .nav{padding:16px 20px}
+    .hero{padding:100px 20px 60px}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-logo">小米线</a>
+  <div class="nav-right" id="navAuthArea">
+    <!-- Logged out -->
+    <span class="nav-link" onclick="openModal('login')" id="navLogin">登录</span>
+    <span class="nav-link" onclick="openModal('register')" id="navRegister">注册</span>
+    <!-- Logged in (hidden by default) -->
+    <div class="dropdown" id="navAvatarWrap" style="display:none">
+      <button class="nav-avatar" id="navAvatar" onclick="toggleDropdown()">W</button>
+      <div class="dropdown-menu" id="dropdownMenu">
+        <span class="mi" onclick="openProfileModal()">👤 个人资料</span>
+        <span class="mi" onclick="handleLogout()">🚪 退出登录</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-hi">Product Lab · 产品实验室</div>
+    <h1 class="hero-title">
+      <span class="tw">构建</span>
+      <span class="tw">实用</span>
+      <span class="tw">工具</span>
+      <span class="tw">。</span>
+    </h1>
+    <p class="hero-sub">探索微信生态下的各种可能性，从文字转语音开始。</p>
+    <div class="hero-scroll">
+      <span></span><p>向下滚动</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PRODUCTS ═══════════ -->
+<section class="products" id="products">
+  <div class="container">
+    <div class="rev"><div class="sec-label">产品列表</div><h2 class="sec-title">我的作品</h2></div>
+  </div>
+  <div class="container">
+    <div class="product-grid" id="productGrid">
+
+      <!-- Product 01: Fish Audio TTS -->
+      <a href="index.html" class="product-card">
+        <span class="product-num">01</span>
+        <div class="product-info">
+          <span class="tag">已发布</span>
+          <h3>Fish Audio TTS</h3>
+          <p>微信文字转语音插件。选 AI 音色 → 输入文字 → 一键合成语音发送。基于 Fish Audio s2-pro 模型。</p>
+          <div class="stats">
+            <span>平台 <b>WeChat</b></span>
+            <span>版本 <b>v1.0</b></span>
+            <span>状态 <b>活跃</b></span>
+          </div>
+        </div>
+        <svg class="product-arrow" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+        </svg>
+      </a>
+
+      <!-- Product 02: Placeholder -->
+      <div class="product-card placeholder">
+        <span class="product-num">02</span>
+        <div class="product-info">
+          <span class="tag">构思中</span>
+          <h3>微信机器人</h3>
+          <p>基于 AI 的自动回复助手，支持关键词触发和上下文对话。</p>
+          <div class="stats"><span>状态 <b>即将启动</b></span></div>
+        </div>
+      </div>
+
+      <!-- Product 03: Placeholder -->
+      <div class="product-card placeholder">
+        <span class="product-num">03</span>
+        <div class="product-info">
+          <span class="tag">计划中</span>
+          <h3>更多产品</h3>
+          <p>欢迎合作，一起探索微信生态的无限可能。</p>
+          <div class="stats"><span>状态 <b>规划中</b></span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="ft">
+  <div>小米线 · 产品实验室</div>
+  <div style="display:flex;gap:24px">
+    <a href="https://github.com/xiaomixian101">GitHub</a>
+    <a href="https://fish.audio">Fish Audio</a>
+  </div>
+</footer>
+
+<!-- ═══════════ LOGIN MODAL ═══════════ -->
+<div class="modal-overlay" id="modalLogin">
+  <div class="modal" style="position:relative">
+    <button class="close" onclick="closeModal()">✕</button>
+    <h3>登录</h3>
+    <form onsubmit="return false">
+      <div class="field"><label>邮箱</label><div class="input-pill"><input type="email" id="loginEmail" placeholder="输入邮箱"></div><div class="err" id="loginEmailErr"></div></div>
+      <div class="field"><label>密码</label><div class="input-pill"><input type="password" id="loginPassword" placeholder="输入密码"></div><div class="err" id="loginPasswordErr"></div></div>
+      <button class="btn" id="loginBtn" onclick="handleLogin()">登 录</button>
+    </form>
+    <p class="switch">没有账户？<a onclick="switchModal('register')">立即注册</a></p>
+  </div>
+</div>
+
+<!-- ═══════════ REGISTER MODAL ═══════════ -->
+<div class="modal-overlay" id="modalRegister">
+  <div class="modal" style="position:relative">
+    <button class="close" onclick="closeModal()">✕</button>
+    <h3>注册</h3>
+    <form onsubmit="return false">
+      <div class="field"><label>邮箱</label><div class="input-pill"><input type="email" id="regEmail" placeholder="输入邮箱"></div><div class="err" id="regEmailErr"></div></div>
+      <div class="field"><label>密码</label><div class="input-pill"><input type="password" id="regPassword" placeholder="至少 6 位"></div><div class="err" id="regPasswordErr"></div></div>
+      <div class="field"><label>昵称</label><div class="input-pill"><input type="text" id="regNickname" placeholder="你的昵称"></div></div>
+      <button class="btn" id="regBtn" onclick="handleRegister()">注 册</button>
+    </form>
+    <p class="switch">已有账户？<a onclick="switchModal('login')">去登录</a></p>
+  </div>
+</div>
+
+<!-- ═══════════ PROFILE MODAL ═══════════ -->
+<div class="modal-overlay" id="modalProfile">
+  <div class="modal" style="position:relative">
+    <button class="close" onclick="document.getElementById('modalProfile').classList.remove('show')">✕</button>
+    <h3>个人资料</h3>
+    <div class="field"><label>邮箱</label><div class="input-pill"><input type="text" id="profileEmail" disabled style="opacity:0.6"></div></div>
+    <div class="field"><label>昵称</label><div class="input-pill"><input type="text" id="profileNickname" placeholder="修改昵称"></div></div>
+    <button class="btn" onclick="handleUpdateProfile()">保存修改</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════ CANVAS PARTICLES ═══════
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let W, H, pts = [];
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight}
+resize();window.addEventListener('resize',resize);
+class Pt{constructor(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-0.5)*0.4;this.vy=(Math.random()-0.5)*0.4;this.r=Math.random()*1.5+0.5;this.a=Math.random()*0.25+0.04}
+upd(){this.x+=this.vx;this.y+=this.vy;if(this.x<-10||this.x>W+10||this.y<-10||this.y>H+10){this.x=Math.random()*W;this.y=Math.random()*H;}}}
+for(let i=0;i<50;i++)pts.push(new Pt());
+(function loop(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.upd();ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(0,0,0,${p.a})`;ctx.fill()});
+for(let i=0;i<pts.length;i++){for(let j=i+1;j<pts.length;j++){let dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<120){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(0,0,0,${0.05*(1-d/120)})`;ctx.lineWidth=0.5;ctx.stroke()}}}
+requestAnimationFrame(loop)})();
+
+// ═══════ NAV SCROLL ═══════
+window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',scrollY>60)});
+
+// ═══════ TOAST ═══════
+let toastTimer;
+function toast(msg){clearTimeout(toastTimer);const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');toastTimer=setTimeout(()=>t.classList.remove('show'),3000)}
+
+// ═══════ MODALS ═══════
+function openModal(type){
+  document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'));
+  if(type==='login') document.getElementById('modalLogin').classList.add('show');
+  if(type==='register') document.getElementById('modalRegister').classList.add('show');
+}
+function closeModal(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'));}
+function switchModal(type){closeModal();openModal(type);}
+function openProfileModal(){closeModal();document.getElementById('modalProfile').classList.add('show');}
+document.querySelectorAll('.modal-overlay').forEach(ov=>{ov.addEventListener('click',function(e){if(e.target===this)closeModal()})});
+
+// ═══════ SUPABASE ═══════
+let supabase;
+(function loadSDK(){
+  const s=document.createElement('script');
+  s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  s.onload=function(){initApp()};
+  s.onerror=function(){
+    const s2=document.createElement('script');
+    s2.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    s2.onload=function(){initApp()};
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+})();
+
+function initApp(){
+  supabase=window.supabase.createClient('https://aarflekuewppseizlcyw.supabase.co','sb_publishable_rTCqG85lF-jYxTeP8q5e6A_IEtRdXTa');
+
+  // Check existing session
+  supabase.auth.getSession().then(r=>{
+    if(r.data?.session?.user) updateUIForUser(r.data.session.user);
+  });
+
+  // Auth state changes
+  supabase.auth.onAuthStateChange((ev,session)=>{if(session?.user)updateUIForUser(session.user);else updateUIForGuest()});
+}
+
+function updateUIForUser(user){
+  document.getElementById('navLogin').style.display='none';
+  document.getElementById('navRegister').style.display='none';
+  const w=document.getElementById('navAvatarWrap');w.style.display='block';
+  const name=(user.user_metadata?.nickname)||(user.email||'').split('@')[0]||'U';
+  document.getElementById('navAvatar').textContent=name[0].toUpperCase();
+  document.getElementById('profileEmail').value=user.email||'';
+  document.getElementById('profileNickname').value=user.user_metadata?.nickname||'';
+  closeModal();
+}
+
+function updateUIForGuest(){
+  document.getElementById('navLogin').style.display='';
+  document.getElementById('navRegister').style.display='';
+  document.getElementById('navAvatarWrap').style.display='none';
+  document.getElementById('dropdownMenu').classList.remove('show');
+  document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'));
+}
+
+// ═══════ LOGIN ═══════
+async function handleLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPassword').value;
+  let ok=true;
+  function err(id,m){document.getElementById(id).textContent=m;document.getElementById(id).style.display=m?'block':'none'}
+  err('loginEmailErr','');err('loginPasswordErr','');
+  if(!email){err('loginEmailErr','请输入邮箱');ok=false}else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err('loginEmailErr','邮箱格式不正确');ok=false}
+  if(!pass){err('loginPasswordErr','请输入密码');ok=false}
+  if(!ok)return;
+  const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='登录中…';
+  try{
+    const r=await supabase.auth.signInWithPassword({email,password:pass});
+    btn.disabled=false;btn.textContent='登 录';
+    if(r.error){toast(r.error.message||'登录失败')}else{toast('登录成功');updateUIForUser(r.data.user)}
+  }catch(e){btn.disabled=false;btn.textContent='登 录';toast('错误: '+e.message)}
+}
+
+// ═══════ REGISTER ═══════
+async function handleRegister(){
+  const email=document.getElementById('regEmail').value.trim();
+  const pass=document.getElementById('regPassword').value;
+  const nick=document.getElementById('regNickname').value.trim();
+  let ok=true;
+  function err(id,m){document.getElementById(id).textContent=m;document.getElementById(id).style.display=m?'block':'none'}
+  err('regEmailErr','');err('regPasswordErr','');
+  if(!email){err('regEmailErr','请输入邮箱');ok=false}else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err('regEmailErr','邮箱格式不正确');ok=false}
+  if(!pass){err('regPasswordErr','请输入密码');ok=false}else if(pass.length<6){err('regPasswordErr','至少 6 位');ok=false}
+  if(!ok)return;
+  const btn=document.getElementById('regBtn');btn.disabled=true;btn.textContent='注册中…';
+  try{
+    const r=await supabase.auth.signUp({email,password:pass,options:{data:{nickname:nick||email.split('@')[0]}}});
+    btn.disabled=false;btn.textContent='注 册';
+    if(r.error){toast(r.error.message||'注册失败')}else if(r.data?.user){
+      if(r.data.session){toast('注册成功');updateUIForUser(r.data.user)}else{toast('注册成功！');switchModal('login')}
+    }
+  }catch(e){btn.disabled=false;btn.textContent='注 册';toast('错误: '+e.message)}
+}
+
+// ═══════ LOGOUT ═══════
+async function handleLogout(){await supabase.auth.signOut();updateUIForGuest();document.getElementById('loginEmail').value='';document.getElementById('loginPassword').value='';toast('已退出');}
+
+// ═══════ UPDATE PROFILE ═══════
+async function handleUpdateProfile(){
+  const nick=document.getElementById('profileNickname').value.trim();
+  if(!nick){toast('请输入昵称');return}
+  const r=await supabase.auth.updateUser({data:{nickname:nick}});
+  if(r.error){toast(r.error.message||'更新失败')}else{
+    document.getElementById('navAvatar').textContent=nick[0].toUpperCase();
+    document.getElementById('modalProfile').classList.remove('show');
+    toast('资料已更新');
+  }
+}
+
+// ═══════ DROPDOWN ═══════
+function toggleDropdown(){document.getElementById('dropdownMenu').classList.toggle('show')}
+document.addEventListener('click',function(e){if(!e.target.closest('.dropdown'))document.getElementById('dropdownMenu').classList.remove('show')});
+
+// ═══════ SCROLL REVEAL ═══════
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')})},{rootMargin:'0px 0px -60px 0px',threshold:0.1});
+document.querySelectorAll('.rev').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
