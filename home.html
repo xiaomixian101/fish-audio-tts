@@ -4,47 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>小米线 · 产品实验室</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,opsz,wght@0,5..120,400;0,5..120,500;0,5..120,600;0,5..120,700;0,5..120,800;1,5..120,500&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,opsz,wght@0,5..120,400;0,5..120,500;0,5..120,600;0,5..120,700;1,5..120,500&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   :root {
     --bg:#FAFAF7; --fg:#0D0D0D; --muted:#999; --border:#E6E6E3; --surface:#F3F3F0;
     --ease:cubic-bezier(0.22,0.61,0.36,1); --out:cubic-bezier(0.16,1,0.3,1);
-    --spring:cubic-bezier(0.34,1.56,0.64,1); --slow:cubic-bezier(0.65,0,0.35,1);
+    --spring:cubic-bezier(0.34,1.56,0.64,1);
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
-  body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;overflow-x:hidden;counter-reset:section}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
   ::selection{background:var(--fg);color:var(--bg)}
 
   /* ═══════════ CANVAS ═══════════ */
   #bgCanvas{position:fixed;inset:0;pointer-events:none;z-index:0}
-
-  /* ═══════════ MOUSE CURSOR GLOW ═══════════ */
-  .cursor-glow{position:fixed;width:500px;height:500px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(0,0,0,0.03),transparent 65%);transform:translate(-50%,-50%);opacity:0;transition:opacity 0.6s}
+  .cursor-glow{position:fixed;width:500px;height:500px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(0,0,0,0.025),transparent 65%);transform:translate(-50%,-50%);opacity:0;transition:opacity 0.6s}
   .cursor-glow.active{opacity:1}
 
   /* ═══════════ NAV ═══════════ */
-  .nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:22px 44px;transition:all 0.5s var(--out);mix-blend-mode:difference}
-  .nav.scrolled{background:rgba(250,250,247,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);mix-blend-mode:normal}
+  .nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:22px 44px;transition:all 0.5s var(--out)}
+  .nav.scrolled{background:rgba(250,250,247,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
   .nav-logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;font-style:italic;text-decoration:none;color:var(--fg);letter-spacing:-0.02em;transition:all 0.4s}
   .nav-logo:hover{transform:scale(1.04)}
-  .nav-right{display:flex;align-items:center;gap:20px}
-  .nav-btn{font-size:12.5px;font-weight:600;letter-spacing:0.06em;text-decoration:none;padding:10px 22px;border-radius:999px;transition:all 0.4s var(--out);cursor:pointer;font-family:inherit;border:none;background:transparent;color:var(--fg)}
-  .nav-btn-ghost{} .nav-btn-ghost:hover{background:rgba(0,0,0,0.05)}
-  .nav-btn-solid{background:var(--fg);color:var(--bg)} .nav-btn-solid:hover{box-shadow:0 0 0 8px rgba(0,0,0,0.06);transform:translateY(-1px)}
+  .nav-right{display:flex;align-items:center;gap:16px}
+  .nav-btn{font-size:12.5px;font-weight:600;letter-spacing:0.06em;padding:10px 22px;border-radius:999px;transition:all 0.4s var(--out);cursor:pointer;font-family:inherit;border:none;background:transparent;color:var(--fg)}
+  .nav-btn-ghost:hover{background:rgba(0,0,0,0.05)}
+  .nav-btn-solid{background:var(--fg);color:var(--bg)}
+  .nav-btn-solid:hover{box-shadow:0 0 0 8px rgba(0,0,0,0.06);transform:translateY(-1px)}
   .nav-avatar{width:38px;height:38px;border-radius:50%;background:var(--fg);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;cursor:pointer;border:none;transition:all 0.4s var(--spring)}
   .nav-avatar:hover{transform:scale(1.1);box-shadow:0 0 0 8px rgba(0,0,0,0.08)}
   .dropdown{position:relative}
   .dropdown-menu{position:absolute;top:50px;right:0;background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:8px;min-width:190px;opacity:0;visibility:hidden;transform:translateY(-10px);transition:all 0.35s var(--out);box-shadow:0 16px 48px rgba(0,0,0,0.08)}
   .dropdown-menu.show{opacity:1;visibility:visible;transform:translateY(0)}
-  .dropdown-menu .dm{display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;border-radius:10px;font-size:13px;background:none;border:none;cursor:pointer;font-family:inherit;color:var(--fg);transition:all 0.2s;text-align:left}
+  .dropdown-menu .dm{display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;border-radius:10px;font-size:13px;background:none;border:none;cursor:pointer;font-family:inherit;color:var(--fg);transition:all 0.2s}
   .dropdown-menu .dm:hover{background:var(--surface)}
 
   /* ═══════════ HERO ═══════════ */
   .hero{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;padding:0 60px}
   .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;width:100%;max-width:1400px;margin:0 auto}
   .hero-left{display:flex;flex-direction:column;justify-content:center}
-  .hero-eyebrow{font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:32px;opacity:0;animation:fadeUp 0.7s 0.1s forwards}
+  .hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:32px;opacity:0;animation:fadeUp 0.7s 0.1s forwards}
   @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
   .hero-title{font-family:'Playfair Display',serif;font-size:clamp(64px,7.5vw,104px);font-weight:700;line-height:0.9;letter-spacing:-0.04em;margin-bottom:32px}
   .hero-title .line{display:block;overflow:hidden;padding-bottom:8px}
@@ -53,7 +52,7 @@
   .hero-title .l1 .word:nth-child(2){animation-delay:0.26s}
   .hero-title .l2 .word:nth-child(1){animation-delay:0.34s}
   .hero-title .l2 .word:nth-child(2){animation-delay:0.42s}
-  .hero-title .l2 .word.italic{font-style:italic;animation-delay:0.50s;color:var(--muted)}
+  .hero-title .l2 .word.italic{font-style:italic;animation-delay:0.50s}
   @keyframes wordReveal{to{opacity:1;transform:translateY(0)}}
 
   .hero-desc{font-size:16px;color:var(--muted);line-height:1.8;max-width:420px;margin-bottom:48px;opacity:0;animation:fadeUp 0.7s 0.55s forwards}
@@ -69,66 +68,31 @@
   .btn-sec{border:1.5px solid var(--border);color:var(--fg)}
   .btn-sec:hover{border-color:var(--fg);box-shadow:0 0 0 8px rgba(0,0,0,0.03)}
 
-  .hero-right{display:flex;align-items:center;justify-content:center;position:relative}
-  .hero-orb{position:absolute;border-radius:50%;pointer-events:none}
-  .hero-orb.a{width:340px;height:340px;border:1px solid var(--border);animation:orbFloat 20s ease-in-out infinite}
-  .hero-orb.b{width:220px;height:220px;border:1px dashed var(--border);animation:orbFloat 26s ease-in-out -8s infinite}
-  .hero-orb.c{width:140px;height:140px;background:var(--fg);animation:orbFloat 18s ease-in-out -14s infinite;opacity:0.06}
-  @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(25px,-30px) scale(1.06)}50%{transform:translate(-16px,20px) scale(0.95)}75%{transform:translate(-22px,-8px) scale(1.03)}}
-  .hero-codeblock{background:var(--fg);color:var(--bg);border-radius:24px;padding:32px 28px;font-family:'SF Mono','Fira Code',monospace;font-size:13px;line-height:1.8;position:relative;z-index:1;box-shadow:0 24px 64px rgba(0,0,0,0.12);opacity:0;animation:fadeUp 0.8s 0.4s forwards}
-  .hero-codeblock .comment{opacity:0.4}
-  .hero-codeblock .fn{color:#FFD700}
-  .hero-codeblock .str{opacity:0.7}
+  /* ═══════════ HERO RIGHT — ABSTRACT GEOMETRY ═══════════ */
+  .hero-right{display:flex;align-items:center;justify-content:center;position:relative;height:500px}
+  .geo-ring{position:absolute;border-radius:50%;border:1.5px solid var(--border);animation:geoSpin 30s linear infinite}
+  .geo-ring.r1{width:360px;height:360px;animation-duration:28s}
+  .geo-ring.r2{width:280px;height:280px;border-style:dashed;animation-duration:22s;animation-direction:reverse}
+  .geo-ring.r3{width:200px;height:200px;animation-duration:18s;border-color:var(--fg);border-width:1px;opacity:0.3}
+  .geo-dot{position:absolute;width:8px;height:8px;background:var(--fg);border-radius:50%;opacity:0.5;animation:geoPulse 3s ease-in-out infinite}
+  .geo-dot.d1{top:12%;left:50%;animation-delay:0s}
+  .geo-dot.d2{top:50%;right:15%;animation-delay:-1s}
+  .geo-dot.d3{bottom:18%;left:30%;animation-delay:-2s}
+  @keyframes geoSpin{to{transform:rotate(360deg)}}
+  @keyframes geoPulse{0%,100%{transform:scale(1);opacity:0.3}50%{transform:scale(2);opacity:0.8}}
+  .geo-label{position:absolute;font-family:'Playfair Display',serif;font-size:14px;color:var(--muted);letter-spacing:0.04em;animation:geoFade 4s ease-in-out infinite}
+  .geo-label.g1{top:46%;left:46%;animation-delay:0s}
+  .geo-label.g2{top:20%;right:22%;animation-delay:-1.3s}
+  .geo-label.g3{bottom:22%;left:20%;animation-delay:-2.6s}
+  @keyframes geoFade{0%,100%{opacity:0.2}50%{opacity:0.7}}
 
-  /* ═══════════ SCROLL INDICATOR ═══════════ */
+  /* ═══════════ SCROLL ═══════════ */
   .scroll-indicator{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeUp 0.7s 0.7s forwards}
   .scroll-indicator .line{width:1px;height:40px;background:linear-gradient(to bottom,var(--fg),transparent);animation:scrollBounce 2s ease-in-out infinite}
   @keyframes scrollBounce{0%,100%{transform:scaleY(0.3);opacity:0.2}50%{transform:scaleY(1);opacity:1}}
   .scroll-indicator span{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted)}
 
-  /* ═══════════ PRODUCTS SECTION ═══════════ */
-  .products-section{position:relative;z-index:1;padding:120px 0}
-  .sec-header{text-align:center;margin-bottom:80px;opacity:0;transform:translateY(40px);transition:all 0.9s var(--out)}
-  .sec-header.visible{opacity:1;transform:translateY(0)}
-  .sec-overline{font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
-  .sec-title{font-family:'Playfair Display',serif;font-size:clamp(40px,5.5vw,68px);font-weight:700;letter-spacing:-0.03em;line-height:1.05}
-
-  .container{max-width:1200px;margin:0 auto;padding:0 40px}
-
-  /* ═══════════ PRODUCT CARDS — HORIZONTAL SCROLL STYLE ═══════════ */
-  .product-list{display:flex;flex-direction:column;gap:24px}
-
-  .pcard{display:grid;grid-template-columns:80px 1fr auto;align-items:center;gap:40px;padding:40px 44px;background:var(--bg);border:1px solid var(--border);border-radius:24px;text-decoration:none;color:inherit;cursor:pointer;transition:all 0.55s var(--out);position:relative;overflow:hidden;opacity:0;transform:translateY(30px)}
-  .pcard.visible{opacity:1;transform:translateY(0)}
-  .pcard::before{content:'';position:absolute;inset:0;background:var(--surface);opacity:0;transition:opacity 0.55s;z-index:0}
-  .pcard:hover::before{opacity:1}
-  .pcard:hover{border-color:var(--fg);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,0.06)}
-  .pcard>*{position:relative;z-index:1}
-
-  .pcard-num{font-family:'Playfair Display',serif;font-size:48px;font-weight:700;color:var(--border);text-align:center;transition:all 0.55s var(--out)}
-  .pcard:hover .pcard-num{color:var(--fg);transform:scale(1.12)}
-
-  .pcard-info .pcard-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:var(--fg);color:var(--bg);padding:4px 14px;border-radius:999px;margin-bottom:16px;transition:all 0.4s}
-  .pcard:hover .pcard-tag{box-shadow:0 4px 16px rgba(0,0,0,0.15)}
-  .pcard-info h3{font-family:'Playfair Display',serif;font-size:30px;font-weight:600;letter-spacing:-0.02em;margin-bottom:10px;transition:transform 0.5s}
-  .pcard:hover .pcard-info h3{transform:translateX(6px)}
-  .pcard-info p{font-size:14px;color:var(--muted);line-height:1.6;max-width:480px}
-  .pcard-meta{display:flex;gap:28px;margin-top:18px;font-size:12px;color:var(--muted)}
-  .pcard-meta b{color:var(--fg);font-size:15px;font-family:'Playfair Display',serif;font-weight:600}
-
-  .pcard-arrow{display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;border:1px solid var(--border);transition:all 0.5s var(--spring);flex-shrink:0}
-  .pcard:hover .pcard-arrow{background:var(--fg);border-color:var(--fg);transform:rotate(-45deg)}
-  .pcard-arrow svg{color:var(--muted);transition:all 0.5s}
-  .pcard:hover .pcard-arrow svg{color:var(--bg);stroke-width:2.5}
-
-  .pcard.placeholder{opacity:0.4;pointer-events:none}
-  .pcard.placeholder .pcard-tag{background:var(--border);color:var(--muted)}
-  .pcard.placeholder .pcard-arrow{border-color:var(--border)}
-  .pcard.placeholder:hover{transform:none;border-color:var(--border);box-shadow:none}
-  .pcard.placeholder:hover .pcard-num{color:var(--border);transform:none}
-  .pcard.placeholder:hover .pcard-info h3{transform:none}
-
-  /* ═══════════ STATS STRIP ═══════════ */
+  /* ═══════════ STATS ═══════════ */
   .stats-strip{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:80px 0}
   .stat-item{padding:48px 40px;text-align:center;border-right:1px solid var(--border)}
   .stat-item:last-child{border-right:none}
@@ -136,10 +100,46 @@
   .stat-item:hover .stat-num{transform:scale(1.08)}
   .stat-label{font-size:12px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase}
 
+  /* ═══════════ PRODUCTS ═══════════ */
+  .products-section{position:relative;z-index:1;padding:120px 0}
+  .sec-header{text-align:center;margin-bottom:80px;opacity:0;transform:translateY(40px);transition:all 0.9s var(--out)}
+  .sec-header.visible{opacity:1;transform:translateY(0)}
+  .sec-overline{font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
+  .sec-title{font-family:'Playfair Display',serif;font-size:clamp(40px,5.5vw,68px);font-weight:700;letter-spacing:-0.03em;line-height:1.05}
+  .container{max-width:1100px;margin:0 auto;padding:0 40px}
+  .product-list{display:flex;flex-direction:column;gap:20px}
+
+  .pcard{display:grid;grid-template-columns:80px 1fr auto;align-items:center;gap:36px;padding:38px 40px;background:var(--bg);border:1px solid var(--border);border-radius:22px;text-decoration:none;color:inherit;cursor:pointer;transition:all 0.5s var(--out);position:relative;overflow:hidden;opacity:0;transform:translateY(30px)}
+  .pcard.visible{opacity:1;transform:translateY(0)}
+  .pcard::before{content:'';position:absolute;inset:0;background:var(--surface);opacity:0;transition:opacity 0.5s;z-index:0}
+  .pcard:hover::before{opacity:1}
+  .pcard:hover{border-color:var(--fg);transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,0.05)}
+  .pcard>*{position:relative;z-index:1}
+  .pcard-num{font-family:'Playfair Display',serif;font-size:44px;font-weight:700;color:var(--border);text-align:center;transition:all 0.5s var(--out)}
+  .pcard:hover .pcard-num{color:var(--fg);transform:scale(1.1)}
+  .pcard-info .pcard-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:var(--fg);color:var(--bg);padding:4px 14px;border-radius:999px;margin-bottom:14px}
+  .pcard-info h3{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px;transition:all 0.5s}
+  .pcard:hover .pcard-info h3{transform:translateX(4px)}
+  .pcard-info p{font-size:14px;color:var(--muted);line-height:1.6;max-width:460px}
+  .pcard-meta{display:flex;gap:24px;margin-top:16px;font-size:12px;color:var(--muted)}
+  .pcard-meta b{color:var(--fg);font-size:15px;font-family:'Playfair Display',serif;font-weight:600}
+  .pcard-arrow{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;border:1.5px solid var(--border);transition:all 0.5s var(--spring);flex-shrink:0}
+  .pcard:hover .pcard-arrow{background:var(--fg);border-color:var(--fg)}
+  .pcard-arrow svg{color:var(--muted);transition:all 0.5s}
+  .pcard:hover .pcard-arrow svg{color:var(--bg);transform:rotate(-45deg)}
+
+  .pcard.placeholder{opacity:0.35;pointer-events:none}
+  .pcard.placeholder .pcard-tag{background:var(--border);color:var(--muted)}
+  .pcard.placeholder:hover{transform:none;border-color:var(--border);box-shadow:none}
+  .pcard.placeholder:hover .pcard-num{color:var(--border);transform:none}
+  .pcard.placeholder:hover .pcard-info h3{transform:none}
+  .pcard.placeholder:hover .pcard-arrow{background:transparent;border-color:var(--border)}
+  .pcard.placeholder:hover .pcard-arrow svg{color:var(--muted);transform:none}
+
   /* ═══════════ MODAL ═══════════ */
   .modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.4s}
   .modal-overlay.show{opacity:1;visibility:visible}
-  .modal{background:var(--bg);border:1px solid var(--border);border-radius:28px;padding:44px 40px;width:420px;max-width:93vw;max-height:85vh;overflow-y:auto;transform:translateY(24px) scale(0.95);transition:all 0.5s var(--spring)}
+  .modal{background:var(--bg);border:1px solid var(--border);border-radius:28px;padding:44px 40px;width:420px;max-width:93vw;max-height:85vh;overflow-y:auto;transform:translateY(24px) scale(0.95);transition:all 0.5s var(--spring);position:relative}
   .modal-overlay.show .modal{transform:translateY(0) scale(1)}
   .modal h3{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;margin-bottom:28px}
   .modal .field{margin-bottom:18px}
@@ -151,10 +151,10 @@
   .modal .err{font-size:11px;color:#D32F2F;margin-top:5px;display:none}
   .modal .btn{width:100%;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:16px;border-radius:999px;border:2px solid var(--fg);background:var(--fg);color:var(--bg);cursor:pointer;transition:all 0.4s;margin-top:4px}
   .modal .btn:hover{background:var(--bg);color:var(--fg)}
-  .modal .btn:disabled{opacity:0.5;cursor:not-allowed}
+  .modal .btn:disabled{opacity:0.5;pointer-events:none}
   .modal .switch{text-align:center;margin-top:18px;font-size:12px;color:var(--muted)}
-  .modal .switch a{color:var(--fg);font-weight:600;text-decoration:none;cursor:pointer}
-  .modal .close-btn{position:absolute;top:20px;right:20px;width:34px;height:34px;border-radius:50%;border:none;background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.35s;color:var(--muted);font-size:15px}
+  .modal .switch a{color:var(--fg);font-weight:600;cursor:pointer;text-decoration:none}
+  .modal .close-btn{position:absolute;top:18px;right:18px;width:34px;height:34px;border-radius:50%;border:none;background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.35s;color:var(--muted);font-size:15px}
   .modal .close-btn:hover{background:var(--fg);color:var(--bg)}
 
   /* ═══════════ TOAST ═══════════ */
@@ -162,21 +162,19 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   /* ═══════════ FOOTER ═══════════ */
-  .ft{position:relative;z-index:1;border-top:1px solid var(--border);padding:44px 44px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;font-size:13px;color:var(--muted)}
+  .ft{position:relative;z-index:1;border-top:1px solid var(--border);padding:40px 44px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;font-size:13px;color:var(--muted)}
   .ft a{color:var(--fg);text-decoration:none;font-weight:600;transition:opacity 0.3s}
   .ft a:hover{opacity:0.7}
 
-  /* ═══════════ MAGNETIC BUTTONS ═══════════ */
-  .magnetic{display:inline-block}
-
-  /* ═══════════ RESPONSIVE ═══════════ */
   @media(max-width:900px){
     .hero{padding:100px 28px 60px;min-height:auto}
-    .hero-grid{grid-template-columns:1fr;gap:48px}
-    .hero-right{order:-1}
-    .hero-codeblock{max-width:100%;font-size:11px}
+    .hero-grid{grid-template-columns:1fr;gap:40px}
+    .hero-right{order:-1;height:260px}
+    .geo-ring.r1{width:220px;height:220px}
+    .geo-ring.r2{width:170px;height:170px}
+    .geo-ring.r3{width:120px;height:120px}
     .hero-title{font-size:42px}
-    .pcard{grid-template-columns:1fr;gap:20px;padding:32px 28px}
+    .pcard{grid-template-columns:1fr;gap:18px;padding:32px 28px}
     .pcard-num{text-align:left;font-size:32px}
     .pcard-arrow{display:none}
     .nav{padding:16px 20px}
@@ -193,15 +191,15 @@
 
 <!-- ═══════════ NAV ═══════════ -->
 <nav class="nav" id="nav">
-  <a href="#" class="nav-logo">xiaomi.</a>
+  <a href="#" class="nav-logo">xiaomi</a>
   <div class="nav-right" id="navAuth">
     <button class="nav-btn nav-btn-ghost" id="navLogin" onclick="openModal('login')">登录</button>
     <button class="nav-btn nav-btn-solid" id="navRegister" onclick="openModal('register')">注册</button>
     <div class="dropdown" id="avatarWrap" style="display:none">
       <button class="nav-avatar" id="navAvatar" onclick="toggleDropdown()">W</button>
       <div class="dropdown-menu" id="dropdownMenu">
-        <button class="dm" onclick="openProfileModal()"><span>👤</span> 个人资料</button>
-        <button class="dm" onclick="handleLogout()"><span>🚪</span> 退出登录</button>
+        <button class="dm" onclick="openProfileModal()"><span style="font-size:16px">👤</span> 个人资料</button>
+        <button class="dm" onclick="handleLogout()"><span style="font-size:16px">🚪</span> 退出登录</button>
       </div>
     </div>
   </div>
@@ -213,16 +211,10 @@
     <div class="hero-left">
       <div class="hero-eyebrow">Product Lab · 产品实验室</div>
       <h1 class="hero-title">
-        <span class="line l1">
-          <span class="word">让</span>
-          <span class="word">工具</span>
-        </span>
-        <span class="line l2">
-          <span class="word">更</span>
-          <span class="word italic">优雅。</span>
-        </span>
+        <span class="line l1"><span class="word">让工具</span></span>
+        <span class="line l2"><span class="word">更优雅</span></span>
       </h1>
-      <p class="hero-desc">探索微信生态的无限可能。<br>从文字转语音开始，构建实用、精致的小工具。</p>
+      <p class="hero-desc">探索微信生态的无限可能<br>从文字转语音开始，构建实用精致的小工具</p>
       <div class="hero-actions">
         <a href="#products" class="btn btn-prim"><span>查看作品</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -230,26 +222,25 @@
         <a href="https://github.com/xiaomixian101" class="btn btn-sec" target="_blank">GitHub</a>
       </div>
     </div>
+
+    <!-- Abstract Geometry -->
     <div class="hero-right">
-      <div class="hero-orb a"></div>
-      <div class="hero-orb b"></div>
-      <div class="hero-orb c"></div>
-      <div class="hero-codeblock">
-        <span class="comment">// Fish Audio TTS v1.0</span><br>
-        <span class="fn">textToSpeech</span>(<span class="str">"你好世界"</span>)<br>
-        &nbsp;&nbsp;→ mp3 → silk →<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">sendVoice</span>()
-      </div>
+      <div class="geo-ring r1"></div>
+      <div class="geo-ring r2"></div>
+      <div class="geo-ring r3"></div>
+      <div class="geo-dot d1"></div>
+      <div class="geo-dot d2"></div>
+      <div class="geo-dot d3"></div>
+      <div class="geo-label g1">TTS</div>
+      <div class="geo-label g2">API</div>
+      <div class="geo-label g3">WeChat</div>
     </div>
   </div>
 
-  <div class="scroll-indicator">
-    <div class="line"></div>
-    <span>Scroll</span>
-  </div>
+  <div class="scroll-indicator"><div class="line"></div><span>向下滚动</span></div>
 </section>
 
-<!-- ═══════════ STATS STRIP ═══════════ -->
+<!-- ═══════════ STATS ═══════════ -->
 <div class="container"><div class="stats-strip">
   <div class="stat-item"><div class="stat-num">500+</div><div class="stat-label">中文 AI 音色</div></div>
   <div class="stat-item"><div class="stat-num">s2-pro</div><div class="stat-label">Fish Audio 模型</div></div>
@@ -265,18 +256,13 @@
     </div>
 
     <div class="product-list" id="productList">
-      <!-- 01 -->
       <a href="index.html" class="pcard">
         <span class="pcard-num">01</span>
         <div class="pcard-info">
           <span class="pcard-tag">已发布</span>
           <h3>Fish Audio TTS</h3>
-          <p>微信文字转语音插件 — 选音色、输文字、一键合成语音消息发送。基于 Fish Audio s2-pro 模型，500+ 中文音色可选。</p>
-          <div class="pcard-meta">
-            <span>平台 <b>WeChat</b></span>
-            <span>版本 <b>v1.0</b></span>
-            <span>状态 <b>活跃</b></span>
-          </div>
+          <p>微信文字转语音插件 — 选音色、输文字、一键合成语音消息发送，500+ 中文音色可选</p>
+          <div class="pcard-meta"><span>平台 <b>WeChat</b></span><span>版本 <b>v1.0</b></span><span>状态 <b>活跃</b></span></div>
         </div>
         <div class="pcard-arrow">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -285,13 +271,12 @@
         </div>
       </a>
 
-      <!-- 02 -->
       <div class="pcard placeholder">
         <span class="pcard-num">02</span>
         <div class="pcard-info">
           <span class="pcard-tag">即将启动</span>
           <h3>微信 AI 机器人</h3>
-          <p>基于大语言模型的智能回复助手，支持上下文对话和关键词触发。</p>
+          <p>基于大语言模型的智能回复助手，支持上下文对话和关键词触发</p>
           <div class="pcard-meta"><span>状态 <b>构思中</b></span></div>
         </div>
         <div class="pcard-arrow">
@@ -301,13 +286,12 @@
         </div>
       </div>
 
-      <!-- 03 -->
       <div class="pcard placeholder">
         <span class="pcard-num">03</span>
         <div class="pcard-info">
           <span class="pcard-tag">计划中</span>
           <h3>更多可能</h3>
-          <p>持续探索微信生态的边界。有想法？欢迎合作。</p>
+          <p>持续探索微信生态的边界，有想法欢迎合作</p>
           <div class="pcard-meta"><span>状态 <b>规划中</b></span></div>
         </div>
         <div class="pcard-arrow">
@@ -322,7 +306,7 @@
 
 <!-- ═══════════ FOOTER ═══════════ -->
 <footer class="ft">
-  <div>© 小米线 · 产品实验室</div>
+  <div>小米线 · 产品实验室</div>
   <div style="display:flex;gap:28px">
     <a href="https://github.com/xiaomixian101" target="_blank">GitHub</a>
     <a href="https://fish.audio" target="_blank">Fish Audio</a>
@@ -330,41 +314,41 @@
   </div>
 </footer>
 
-<!-- ═══════════ LOGIN MODAL ═══════════ -->
+<!-- ═══════════ MODALS ═══════════ -->
 <div class="modal-overlay" id="modalLogin">
-  <div class="modal" style="position:relative">
+  <div class="modal">
     <button class="close-btn" onclick="closeModal()">✕</button>
     <h3>欢迎回来</h3>
     <form onsubmit="return false">
       <div class="field"><label>邮箱</label><div class="input-pill"><input type="email" id="loginEmail" placeholder="you@example.com"></div><div class="err" id="loginEmailErr"></div></div>
       <div class="field"><label>密码</label><div class="input-pill"><input type="password" id="loginPassword" placeholder="输入密码"></div><div class="err" id="loginPasswordErr"></div></div>
-      <button class="btn" id="loginBtn" onclick="handleLogin()">登 录</button>
+      <button class="btn" id="loginBtn" type="button" onclick="handleLogin()">登 录</button>
     </form>
     <p class="switch">没有账户？<a onclick="switchModal('register')">立即注册</a></p>
   </div>
 </div>
 
 <div class="modal-overlay" id="modalRegister">
-  <div class="modal" style="position:relative">
+  <div class="modal">
     <button class="close-btn" onclick="closeModal()">✕</button>
     <h3>创建账户</h3>
     <form onsubmit="return false">
       <div class="field"><label>邮箱</label><div class="input-pill"><input type="email" id="regEmail" placeholder="you@example.com"></div><div class="err" id="regEmailErr"></div></div>
       <div class="field"><label>密码</label><div class="input-pill"><input type="password" id="regPassword" placeholder="至少 6 位"></div><div class="err" id="regPasswordErr"></div></div>
       <div class="field"><label>昵称</label><div class="input-pill"><input type="text" id="regNickname" placeholder="你的昵称"></div></div>
-      <button class="btn" id="regBtn" onclick="handleRegister()">注 册</button>
+      <button class="btn" id="regBtn" type="button" onclick="handleRegister()">注 册</button>
     </form>
     <p class="switch">已有账户？<a onclick="switchModal('login')">去登录</a></p>
   </div>
 </div>
 
 <div class="modal-overlay" id="modalProfile">
-  <div class="modal" style="position:relative">
+  <div class="modal">
     <button class="close-btn" onclick="document.getElementById('modalProfile').classList.remove('show')">✕</button>
     <h3>个人资料</h3>
     <div class="field"><label>邮箱</label><div class="input-pill"><input type="text" id="profileEmail" disabled style="opacity:0.5"></div></div>
     <div class="field"><label>昵称</label><div class="input-pill"><input type="text" id="profileNickname" placeholder="修改昵称"></div></div>
-    <button class="btn" onclick="handleUpdateProfile()">保存修改</button>
+    <button class="btn" type="button" onclick="handleUpdateProfile()">保存修改</button>
   </div>
 </div>
 
@@ -372,18 +356,17 @@
 
 <script>
 // ═══════ CANVAS PARTICLES ═══════
-const canvas=document.getElementById('bgCanvas'),ctx=canvas.getContext('2d');
-let W,H,pts=[];
-function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight}
-resize();window.addEventListener('resize',resize);
-class Pt{constructor(){this.reset()}
-reset(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-0.5)*0.35;this.vy=(Math.random()-0.5)*0.35;this.r=Math.random()*1.8+0.4;this.a=Math.random()*0.22+0.03}
-upd(){this.x+=this.vx;this.y+=this.vy;if(this.x<-20||this.x>W+20||this.y<-20||this.y>H+20)this.reset()}}
-for(let i=0;i<55;i++)pts.push(new Pt());
-(function loop(){ctx.clearRect(0,0,W,H);
-  pts.forEach(p=>{p.upd();ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(0,0,0,${p.a})`;ctx.fill()});
-  for(let i=0;i<pts.length;i++){for(let j=i+1;j<pts.length;j++){let dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<130){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(0,0,0,${0.045*(1-d/130)})`;ctx.lineWidth=0.5;ctx.stroke()}}}
-  requestAnimationFrame(loop)})();
+(function(){
+  const c=document.getElementById('bgCanvas'),x=c.getContext('2d');
+  let W,H,P=[];
+  function R(){W=c.width=innerWidth;H=c.height=innerHeight}R();window.addEventListener('resize',R);
+  for(let i=0;i<50;i++)P.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,r:Math.random()*1.6+0.4,a:Math.random()*0.2+0.03});
+  (function L(){
+    x.clearRect(0,0,W,H);
+    P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<-20||p.x>W+20||p.y<-20||p.y>H+20){p.x=Math.random()*W;p.y=Math.random()*H}x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fillStyle=`rgba(0,0,0,${p.a})`;x.fill()});
+    for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){let dx=P[i].x-P[j].x,dy=P[i].y-P[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<120){x.beginPath();x.moveTo(P[i].x,P[i].y);x.lineTo(P[j].x,P[j].y);x.strokeStyle=`rgba(0,0,0,${0.04*(1-d/120)})`;x.lineWidth=0.5;x.stroke()}}
+    requestAnimationFrame(L)})();
+})();
 
 // ═══════ CURSOR GLOW ═══════
 const glow=document.getElementById('cursorGlow');
@@ -394,63 +377,92 @@ document.addEventListener('mouseleave',()=>glow.classList.remove('active'));
 window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',scrollY>40)});
 
 // ═══════ SCROLL REVEAL ═══════
-const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{rootMargin:'0px 0px -80px 0px',threshold:0.08});
-document.querySelectorAll('.sec-header,.pcard').forEach(el=>obs.observe(el));
-
-// ═══════ MAGNETIC BUTTONS ═══════
-document.querySelectorAll('.btn-prim,.btn-sec').forEach(btn=>{
-  btn.addEventListener('mousemove',e=>{const r=btn.getBoundingClientRect();const x=e.clientX-r.left-r.width/2;const y=e.clientY-r.top-r.height/2;btn.style.transform=`translate(${x*0.15}px,${y*0.15}px)`});
-  btn.addEventListener('mouseleave',e=>{btn.style.transform='translate(0,0)';btn.style.transition='transform 0.5s var(--spring)';setTimeout(()=>btn.style.transition='',500)});
-});
+new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{rootMargin:'0px 0px -80px 0px',threshold:0.08}).observe(document.getElementById('secHeader'));
+document.querySelectorAll('.pcard').forEach(c=>new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{rootMargin:'0px 0px -60px 0px',threshold:0.08}).observe(c));
 
 // ═══════ TOAST ═══════
-let toastTimer;function toast(msg){clearTimeout(toastTimer);const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');toastTimer=setTimeout(()=>t.classList.remove('show'),3000)}
+let TT;function toast(m){clearTimeout(TT);const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');TT=setTimeout(()=>t.classList.remove('show'),3000)}
 
 // ═══════ MODALS ═══════
-function openModal(type){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'));document.getElementById('modal'+(type==='login'?'Login':type==='register'?'Register':'Profile')).classList.add('show')}
+function openModal(type){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'));const id='modal'+(type==='login'?'Login':type==='register'?'Register':'Profile');document.getElementById(id).classList.add('show')}
 function closeModal(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'))}
 function switchModal(type){closeModal();openModal(type)}
 function openProfileModal(){closeModal();document.getElementById('modalProfile').classList.add('show')}
 document.querySelectorAll('.modal-overlay').forEach(ov=>ov.addEventListener('click',function(e){if(e.target===this)closeModal()}));
 
-// ═══════ SUPABASE ═══════
-let supabase;
-(function loadSDK(){const s=document.createElement('script');s.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';s.onload=function(){initApp()};s.onerror=function(){const s2=document.createElement('script');s2.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';s2.onload=function(){initApp()};document.head.appendChild(s2)};document.head.appendChild(s)})();
+// ═══════ SUPABASE — SYNC INIT ═══════
+const SB_URL='https://aarflekuewppseizlcyw.supabase.co';
+const SB_KEY='sb_publishable_rTCqG85lF-jYxTeP8q5e6A_IEtRdXTa';
+const supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
-function initApp(){
-  supabase=window.supabase.createClient('https://aarflekuewppseizlcyw.supabase.co','sb_publishable_rTCqG85lF-jYxTeP8q5e6A_IEtRdXTa');
-  supabase.auth.getSession().then(r=>{if(r.data?.session?.user)updateUIForUser(r.data.session.user)});
+(function initAuth(){
+  supabase.auth.getSession().then(r=>{if(r.data?.session?.user)updateUIForUser(r.data.session.user)}).catch(()=>{});
   supabase.auth.onAuthStateChange((ev,session)=>{if(session?.user)updateUIForUser(session.user);else updateUIForGuest()});
-}
+})();
+
 function updateUIForUser(user){
-  document.getElementById('navLogin').style.display='none';document.getElementById('navRegister').style.display='none';document.getElementById('avatarWrap').style.display='block';
-  const name=(user.user_metadata?.nickname)||(user.email||'').split('@')[0]||'U';document.getElementById('navAvatar').textContent=name[0].toUpperCase();
-  document.getElementById('profileEmail').value=user.email||'';document.getElementById('profileNickname').value=user.user_metadata?.nickname||'';closeModal();
+  document.getElementById('navLogin').style.display='none';
+  document.getElementById('navRegister').style.display='none';
+  document.getElementById('avatarWrap').style.display='block';
+  const name=(user.user_metadata?.nickname)||(user.email||'').split('@')[0]||'U';
+  document.getElementById('navAvatar').textContent=name[0].toUpperCase();
+  document.getElementById('profileEmail').value=user.email||'';
+  document.getElementById('profileNickname').value=user.user_metadata?.nickname||'';
+  closeModal();
 }
 function updateUIForGuest(){
-  document.getElementById('navLogin').style.display='';document.getElementById('navRegister').style.display='';document.getElementById('avatarWrap').style.display='none';document.getElementById('dropdownMenu').classList.remove('show');
-  document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'));
+  document.getElementById('navLogin').style.display='';
+  document.getElementById('navRegister').style.display='';
+  document.getElementById('avatarWrap').style.display='none';
+  document.getElementById('dropdownMenu').classList.remove('show');
 }
+
 async function handleLogin(){
-  const email=document.getElementById('loginEmail').value.trim(),pass=document.getElementById('loginPassword').value;let ok=true;
-  function err(id,m){document.getElementById(id).textContent=m;document.getElementById(id).style.display=m?'block':'none'}
-  err('loginEmailErr','');err('loginPasswordErr','');if(!email){err('loginEmailErr','请输入邮箱');ok=false}else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err('loginEmailErr','邮箱格式不正确');ok=false}
-  if(!pass){err('loginPasswordErr','请输入密码');ok=false}if(!ok)return;
-  const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='登录中…';
-  try{const r=await supabase.auth.signInWithPassword({email,password:pass});btn.disabled=false;btn.textContent='登 录';if(r.error)toast(r.error.message||'登录失败');else{toast('登录成功');updateUIForUser(r.data.user)}}catch(e){btn.disabled=false;btn.textContent='登 录';toast('错误: '+e.message)}
+  document.getElementById('loginEmailErr').style.display='none';document.getElementById('loginPasswordErr').style.display='none';
+  const email=document.getElementById('loginEmail').value.trim(),pass=document.getElementById('loginPassword').value;
+  if(!email){document.getElementById('loginEmailErr').textContent='请输入邮箱';document.getElementById('loginEmailErr').style.display='block';return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){document.getElementById('loginEmailErr').textContent='邮箱格式不正确';document.getElementById('loginEmailErr').style.display='block';return}
+  if(!pass){document.getElementById('loginPasswordErr').textContent='请输入密码';document.getElementById('loginPasswordErr').style.display='block';return}
+  const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='登录中';
+  try{
+    const {data,error}=await supabase.auth.signInWithPassword({email,password:pass});
+    btn.disabled=false;btn.textContent='登 录';
+    if(error){toast(error.message.includes('Invalid')?'邮箱或密码错误':error.message)}
+    else if(data.user){toast('登录成功');updateUIForUser(data.user)}
+  }catch(e){btn.disabled=false;btn.textContent='登 录';toast('网络错误，请重试')}
 }
+
 async function handleRegister(){
-  const email=document.getElementById('regEmail').value.trim(),pass=document.getElementById('regPassword').value,nick=document.getElementById('regNickname').value.trim();let ok=true;
-  function err(id,m){document.getElementById(id).textContent=m;document.getElementById(id).style.display=m?'block':'none'}
-  err('regEmailErr','');err('regPasswordErr','');if(!email){err('regEmailErr','请输入邮箱');ok=false}else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err('regEmailErr','邮箱格式不正确');ok=false}
-  if(!pass){err('regPasswordErr','请输入密码');ok=false}else if(pass.length<6){err('regPasswordErr','至少 6 位');ok=false}if(!ok)return;
-  const btn=document.getElementById('regBtn');btn.disabled=true;btn.textContent='注册中…';
-  try{const r=await supabase.auth.signUp({email,password:pass,options:{data:{nickname:nick||email.split('@')[0]}}});btn.disabled=false;btn.textContent='注 册';if(r.error)toast(r.error.message||'注册失败');else if(r.data?.user){if(r.data.session){toast('注册成功');updateUIForUser(r.data.user)}else{toast('注册成功！');switchModal('login')}}}catch(e){btn.disabled=false;btn.textContent='注 册';toast('错误: '+e.message)}
+  document.getElementById('regEmailErr').style.display='none';document.getElementById('regPasswordErr').style.display='none';
+  const email=document.getElementById('regEmail').value.trim(),pass=document.getElementById('regPassword').value,nick=document.getElementById('regNickname').value.trim();
+  if(!email){document.getElementById('regEmailErr').textContent='请输入邮箱';document.getElementById('regEmailErr').style.display='block';return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){document.getElementById('regEmailErr').textContent='邮箱格式不正确';document.getElementById('regEmailErr').style.display='block';return}
+  if(!pass){document.getElementById('regPasswordErr').textContent='请输入密码';document.getElementById('regPasswordErr').style.display='block';return}
+  if(pass.length<6){document.getElementById('regPasswordErr').textContent='至少 6 位字符';document.getElementById('regPasswordErr').style.display='block';return}
+  const btn=document.getElementById('regBtn');btn.disabled=true;btn.textContent='注册中';
+  try{
+    const {data,error}=await supabase.auth.signUp({email,password:pass,options:{data:{nickname:nick||email.split('@')[0]}}});
+    btn.disabled=false;btn.textContent='注 册';
+    if(error){toast(error.message.includes('already')?'该邮箱已注册':error.message)}
+    else if(data.user){if(data.session){toast('注册成功');updateUIForUser(data.user)}else{toast('注册成功，请登录');switchModal('login')}}
+  }catch(e){btn.disabled=false;btn.textContent='注 册';toast('网络错误，请重试')}
 }
+
 async function handleLogout(){await supabase.auth.signOut();updateUIForGuest();toast('已退出')}
-async function handleUpdateProfile(){const nick=document.getElementById('profileNickname').value.trim();if(!nick){toast('请输入昵称');return}const r=await supabase.auth.updateUser({data:{nickname:nick}});if(r.error){toast(r.error.message||'更新失败')}else{document.getElementById('navAvatar').textContent=nick[0].toUpperCase();document.getElementById('modalProfile').classList.remove('show');toast('资料已更新')}}
+async function handleUpdateProfile(){
+  const nick=document.getElementById('profileNickname').value.trim();
+  if(!nick){toast('请输入昵称');return}
+  const {error}=await supabase.auth.updateUser({data:{nickname:nick}});
+  if(error){toast(error.message)}else{document.getElementById('navAvatar').textContent=nick[0].toUpperCase();document.getElementById('modalProfile').classList.remove('show');toast('资料已更新')}
+}
 function toggleDropdown(){document.getElementById('dropdownMenu').classList.toggle('show')}
 document.addEventListener('click',function(e){if(!e.target.closest('.dropdown'))document.getElementById('dropdownMenu').classList.remove('show')});
+
+// ═══════ MAGNETIC ═══════
+document.querySelectorAll('.btn-prim,.btn-sec').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{const r=btn.getBoundingClientRect();const x=e.clientX-r.left-r.width/2;const y=e.clientY-r.top-r.height/2;btn.style.transform=`translate(${x*0.15}px,${y*0.15}px)`});
+  btn.addEventListener('mouseleave',()=>{btn.style.transform='translate(0,0)';btn.style.transition='transform 0.5s';setTimeout(()=>btn.style.transition='',500)});
+});
 </script>
 </body>
 </html>
